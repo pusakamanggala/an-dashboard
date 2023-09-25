@@ -34,9 +34,9 @@ const DashboardLayout = ({ children }) => {
           />
         </svg>
       </button>
-      <div className="w-full flex flex-col">
+      <div className="w-0 flex-1 flex flex-col">
         <Header />
-        <main className="overflow-auto h-full p-5">{children}</main>
+        <main className="p-5 flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
