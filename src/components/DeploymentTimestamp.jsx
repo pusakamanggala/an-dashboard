@@ -14,7 +14,7 @@ const DeploymentTimestamp = ({ timestamp }) => {
     }
   };
   return (
-    <section className="px-5 border-2 rounded-md w-full overflow-y-auto">
+    <section className="px-5 border-2 rounded-2xl w-full overflow-y-auto">
       <table className="border-separate border-spacing-y-5 text-sm w-full font-medium">
         <thead>
           <tr className="h-10 align-top text-gray-500 divide-y-reverse divide-y-2">
