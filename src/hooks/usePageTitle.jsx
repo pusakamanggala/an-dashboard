@@ -8,7 +8,7 @@ const usePageTitle = () => {
     case "/dashboard":
       return "Dashboard";
     case "/deploy":
-      return "Deploy";
+      return "Deployment";
     case "/images":
       return "Images";
     case "/service":
