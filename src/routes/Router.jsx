@@ -3,6 +3,7 @@ import LoginPage from "../pages/LoginPage";
 import DashboardLayout from "../layout/DashboardLayout";
 import Dashboard from "../pages/Dashboard";
 import Deployment from "../pages/Deployment";
+import Images from "../pages/Images";
 
 const Router = () => {
   return (
@@ -22,6 +23,14 @@ const Router = () => {
           element={
             <DashboardLayout>
               <Deployment />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/images"
+          element={
+            <DashboardLayout>
+              <Images />
             </DashboardLayout>
           }
         />
