@@ -14,7 +14,7 @@ const usePageTitle = () => {
     case "/service":
       return "Service";
     case "/addons":
-      return "Addons";
+      return "Addons Service";
     case "/members":
       return "Members";
     case "/kube-config":
