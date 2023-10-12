@@ -6,6 +6,7 @@ import Deployment from "../pages/Deployment";
 import Images from "../pages/Images";
 import AddonsService from "../pages/AddonsService";
 import Members from "../pages/Members";
+import Services from "../pages/Services";
 
 const Router = () => {
   return (
@@ -49,6 +50,14 @@ const Router = () => {
           element={
             <DashboardLayout>
               <Members />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/service"
+          element={
+            <DashboardLayout>
+              <Services />
             </DashboardLayout>
           }
         />
