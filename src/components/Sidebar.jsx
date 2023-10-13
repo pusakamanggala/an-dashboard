@@ -3,10 +3,9 @@ import GridIcon from "../icons/grid.svg";
 import CloudIcon from "../icons/cloud.svg";
 import BoxIcon from "../icons/box.svg";
 import ToolIcon from "../icons/tool.svg";
-import GitlabIcon from "../icons/gitlab.svg";
-import KubeIcon from "../icons/kube.svg";
 import UsersIcon from "../icons/users.svg";
 import PackageIcon from "../icons/package.svg";
+import LayersIcon from "../icons/layers-alt.svg";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 
@@ -93,20 +92,11 @@ const Sidebar = ({ isOpen }) => {
           </li>
           <li>
             <NavLink
-              to="/kube-config"
+              to="/project-config"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={KubeIcon} alt="" />
-              <span>Kube Config</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/gitlab-config"
-              className={({ isActive }) => (isActive ? "active" : "inActive")}
-            >
-              <img src={GitlabIcon} alt="" />
-              <span>Gitlab Config</span>
+              <img src={LayersIcon} alt="" />
+              <span>Project Config</span>
             </NavLink>
           </li>
         </ul>

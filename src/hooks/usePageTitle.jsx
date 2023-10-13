@@ -12,15 +12,13 @@ const usePageTitle = () => {
     case "/images":
       return "Images";
     case "/service":
-      return "Service";
+      return "Services";
     case "/addons":
       return "Addons Service";
     case "/members":
       return "User Members";
-    case "/kube-config":
-      return "Kube Config";
-    case "/gitlab-config":
-      return "Gitlab Config";
+    case "/project-config":
+      return "Project Config";
     default:
       return "Page title not found";
   }
