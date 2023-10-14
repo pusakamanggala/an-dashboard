@@ -7,6 +7,7 @@ import Images from "../pages/Images";
 import AddonsService from "../pages/AddonsService";
 import Members from "../pages/Members";
 import Services from "../pages/Services";
+import ProjectConfig from "../pages/ProjectConfig";
 
 const Router = () => {
   return (
@@ -58,6 +59,14 @@ const Router = () => {
           element={
             <DashboardLayout>
               <Services />
+            </DashboardLayout>
+          }
+        />
+        <Route
+          path="/project-config"
+          element={
+            <DashboardLayout>
+              <ProjectConfig />
             </DashboardLayout>
           }
         />
