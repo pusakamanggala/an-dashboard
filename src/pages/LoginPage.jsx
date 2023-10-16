@@ -1,15 +1,16 @@
 import LoginSideBackground from "../img/sec-graphic.svg";
 import HomeIcon from "../icons/home.svg";
 import ANLogo from "../img/an-logo.svg";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import useNotification from "../hooks/useNotification";
 
 const LoginPage = () => {
   const usernameRef = useRef(null);
   const passwordRef = useRef(null);
+  const [rememberUser, setRememberUser] = useState(false);
 
-  const loginMutation = useLogin();
+  const loginMutation = useLogin(rememberUser);
   const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
     useNotification();
 
@@ -34,11 +35,13 @@ const LoginPage = () => {
       notifyLoading("Logging in...");
     } else if (loginMutation.isSuccess) {
       notifySuccess("Login successful");
+      loginMutation.reset();
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } else if (loginMutation.isError) {
       notifyError("Login failed");
+      loginMutation.reset();
     }
   }, [loginMutation, notifyLoading, notifySuccess, notifyError]);
 
@@ -94,9 +97,20 @@ const LoginPage = () => {
               type="password"
               id="password"
               autoComplete="current-password"
-              className="border-2 p-2 rounded-lg mb-10 focus:border-sky-700 focus:outline-none"
+              className="border-2 p-2 rounded-lg mb-2 focus:border-sky-700 focus:outline-none"
               placeholder="password"
             />
+            <div className="flex items-center gap-2 mb-10">
+              <input
+                type="checkbox"
+                id="remember_me"
+                onChange={(e) => setRememberUser(e.target.checked)}
+                value={rememberUser}
+              />
+              <label className="text-sm" htmlFor="remember_me">
+                Remember me
+              </label>
+            </div>
             <button
               className={`${
                 loginMutation.isLoading ? "bg-sky-500" : "bg-sky-700"
