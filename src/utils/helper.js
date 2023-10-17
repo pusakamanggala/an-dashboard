@@ -32,3 +32,23 @@ export const getBadgeColor = (status) => {
       return "bg-red-100 text-red-600";
   }
 };
+
+export const paginate = (data, itemsPerPage, currentPage) => {
+  // Calculate the start and end index for the current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  // Slice the data to get the current page's items
+  const paginatedData = data.slice(startIndex, endIndex);
+
+  // Calculate the total number of pages
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+
+  return {
+    currentPage,
+    totalPages,
+    totalItems: data.length,
+    itemsPerPage,
+    data: paginatedData,
+  };
+};
