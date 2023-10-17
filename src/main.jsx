@@ -6,7 +6,13 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { UserProvider } from "./context/UserContext.jsx";
 import { ToastContainer } from "react-toastify";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
