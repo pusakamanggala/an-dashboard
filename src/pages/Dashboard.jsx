@@ -6,117 +6,110 @@ import AltToolIcon from "../icons/tool-alt.svg";
 import LayersIcon from "../icons/layers.svg";
 import SummaryCard from "../components/SummaryCard";
 import DeploymentTimestamp from "../components/DeploymentTimestamp";
+import { useGetDashboardContent } from "../hooks/useGetDashboardContent";
+import SummaryCardSkeleton from "../components/SummaryCardSkeleton";
+import TableSkeleton from "../components/TableSkeleton";
 
 const Dashboard = () => {
   const pageTitle = usePageTitle();
 
-  // timestamp dummy data
-  const timestamp = [
-    {
-      id: 1,
-      timestamp: "2021-08-01 12:00:00",
-      developer: "John Doe",
-      repository: "pti-pratama-elf",
-      branch: "dev-abd-ad/add",
-      image: "pti-pratama-elf-this-is-image",
-      deploy_at: "2021-08-01 12:00:00",
-      status: "complete",
-    },
-    {
-      id: 2,
-      timestamp: "2021-08-02 14:30:00",
-      developer: "Jane Smith",
-      repository: "my-awesome-app",
-      branch: "main",
-      image: "my-awesome-app-image",
-      deploy_at: "2021-08-02 14:30:00",
-      status: "complete",
-    },
-    {
-      id: 3,
-      timestamp: "2021-08-03 10:15:00",
-      developer: "Alice Johnson",
-      repository: "cool-project",
-      branch: "feature-update",
-      image: "cool-project-image",
-      deploy_at: "2021-08-03 10:15:00",
-      status: "on-delivery",
-    },
-    {
-      id: 4,
-      timestamp: "2021-08-04 16:45:00",
-      developer: "Bob Wilson",
-      repository: "web-app",
-      branch: "bug-fixes",
-      image: "web-app-image",
-      deploy_at: "2021-08-04 16:45:00",
-      status: "failed",
-    },
-    {
-      id: 5,
-      timestamp: "2021-08-05 09:20:00",
-      developer: "Eva Anderson",
-      repository: "data-analytics",
-      branch: "data-processing",
-      image: "data-analytics-image",
-      deploy_at: "2021-08-05 09:20:00",
-      status: "complete",
-    },
-    {
-      id: 6,
-      timestamp: "2021-08-06 17:30:00",
-      developer: "Michael Lee",
-      repository: "mobile-app",
-      branch: "feature-additions",
-      image: "mobile-app-image",
-      deploy_at: "2021-08-06 17:30:00",
-      status: "pending",
-    },
-  ];
+  const {
+    data: nodeData,
+    isLoading: nodeIsLoading,
+    isSuccess: nodeIsSuccess,
+  } = useGetDashboardContent("nodes");
+
+  const {
+    data: podData,
+    isLoading: podIsLoading,
+    isSuccess: podIsSuccess,
+  } = useGetDashboardContent("pods");
+
+  const {
+    data: deploymentData,
+    isLoading: deploymentIsLoading,
+    isSuccess: deploymentIsSuccess,
+  } = useGetDashboardContent("deployments");
+
+  const {
+    data: serviceData,
+    isLoading: serviceIsLoading,
+    isSuccess: serviceIsSuccess,
+  } = useGetDashboardContent("services");
+
+  const {
+    data: imageData,
+    isLoading: imageIsLoading,
+    isSuccess: imageIsSuccess,
+  } = useGetDashboardContent("images");
+
+  const {
+    data: eventData,
+    isLoading: eventIsLoading,
+    isSuccess: eventIsSuccess,
+  } = useGetDashboardContent("events");
 
   return (
     <section className="space-y-5 w-full">
       <h1 className="font-semibold text-sky-700 text-2xl">{pageTitle}</h1>
       {/* service bar / summary card */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <SummaryCard
-          icon={DiscIcon}
-          title="Total Nodes"
-          value={10}
-          readyInstanceValue={100}
-          diskPressureValue={100}
-        />
-        <SummaryCard
-          icon={ActivityIcon}
-          title="Total Pods"
-          value={200}
-          readyInstanceValue={100}
-          diskPressureValue={100}
-        />
-        <SummaryCard
-          icon={SendIcon}
-          title="Deployment"
-          value={35}
-          readyInstanceValue={100}
-          diskPressureValue={100}
-        />
-        <SummaryCard
-          icon={AltToolIcon}
-          title="Services"
-          value={98}
-          readyInstanceValue={100}
-          diskPressureValue={100}
-        />
-        <SummaryCard
-          icon={LayersIcon}
-          title="Images"
-          value={98}
-          readyInstanceValue={100}
-          diskPressureValue={100}
-        />
+        {/* summary card loading skeleton */}
+        {nodeIsLoading && <SummaryCardSkeleton />}
+        {podIsLoading && <SummaryCardSkeleton />}
+        {deploymentIsLoading && <SummaryCardSkeleton />}
+        {serviceIsLoading && <SummaryCardSkeleton />}
+        {imageIsLoading && <SummaryCardSkeleton />}
+        {/* summary card */}
+        {nodeIsSuccess && (
+          <SummaryCard
+            icon={DiscIcon}
+            title="Total Nodes"
+            value={nodeData.data.jumlahNode}
+            readyInstanceValue={nodeData.data.statusNode.ready}
+            diskPressureValue={nodeData.data.statusNode.diskPressure}
+            memoryPressureValue={nodeData.data.statusNode.memoryPressure}
+            pidPressureValue={nodeData.data.statusNode.pidPressure}
+            networkUnavailableValue={
+              nodeData.data.statusNode.networkUnavailable
+            }
+          />
+        )}
+        {podIsSuccess && (
+          <SummaryCard
+            icon={ActivityIcon}
+            title="Total Pods"
+            value={podData.data.jumlahPod}
+            runningInstanceValue={podData.data.podStatus.Running}
+            pendingInstanceValue={podData.data.podStatus.Pending}
+          />
+        )}
+        {deploymentIsSuccess && (
+          <SummaryCard
+            icon={SendIcon}
+            title="Deployment"
+            value={deploymentData.data.jumlahDeployment}
+          />
+        )}
+        {serviceIsSuccess && (
+          <SummaryCard
+            icon={AltToolIcon}
+            title="Services"
+            value={serviceData.data.jumlahService}
+          />
+        )}
+        {imageIsSuccess && (
+          <SummaryCard
+            icon={LayersIcon}
+            title="Images"
+            value={imageData.data.jumlahImages}
+          />
+        )}
       </section>
-      {/* deployment timestamp */}
-      <DeploymentTimestamp timestamp={timestamp} />
+      {/* table loading skeleton */}
+      {eventIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
+      {/* deployment timestamp table */}
+      {eventIsSuccess && <DeploymentTimestamp timestamp={eventData.data} />}
     </section>
   );
 };
