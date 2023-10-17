@@ -1,13 +1,26 @@
 import PropTypes from "prop-types";
 import { formatTimestamp, getBadgeColor } from "../utils/helper";
 import { paginate } from "../utils/helper";
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const DeploymentTimestamp = ({ timestamp }) => {
-  // paginate the timestamp data
+  // sort data by timestamp
+  const sortedTimestamp = timestamp.sort((a, b) => {
+    const dateA = new Date(a.lastTimestamp);
+    const dateB = new Date(b.lastTimestamp);
+    // Sort in descending order
+    return dateB - dateA;
+  });
+
+  // paginate data
   const itemsPerPage = 10;
-  const [currentPage, setCurrentPage] = useState(1);
-  const paginatedTimestamp = paginate(timestamp, itemsPerPage, currentPage);
+  const [paginationParam, setPaginationParam] = useSearchParams({ page: "1" });
+  const currentPage = parseInt(paginationParam.get("page"));
+  const paginatedTimestamp = paginate(
+    sortedTimestamp,
+    itemsPerPage,
+    currentPage
+  );
 
   return (
     <>
@@ -85,7 +98,11 @@ const DeploymentTimestamp = ({ timestamp }) => {
             }`}
             title="Previous Page"
             type="button"
-            onClick={() => setCurrentPage((prev) => prev - 1)}
+            onClick={() => {
+              if (currentPage > 1) {
+                setPaginationParam({ page: (currentPage - 1).toString() });
+              }
+            }}
             disabled={paginatedTimestamp.currentPage === 1}
           >
             <svg
@@ -112,7 +129,11 @@ const DeploymentTimestamp = ({ timestamp }) => {
             }`}
             title="Next Page"
             type="button"
-            onClick={() => setCurrentPage((prev) => prev + 1)}
+            onClick={() => {
+              if (currentPage < paginatedTimestamp.totalPages) {
+                setPaginationParam({ page: (currentPage + 1).toString() });
+              }
+            }}
             disabled={
               paginatedTimestamp.currentPage === paginatedTimestamp.totalPages
             }
