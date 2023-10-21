@@ -1,17 +1,67 @@
-import { useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import UserContext from "../context/UserContext";
+import { useGetUserByIDAlt } from "../hooks/useGetUserByIDAlt";
+import UpdateUserProfileModal from "./UpdateUserProfileModal";
 
 const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const [isUpdateProfileModalOpen, setIsUpdateProfileModalOpen] =
+    useState(false);
+
+  const handleUpdateProfileModal = () => {
+    setIsUpdateProfileModalOpen(!isUpdateProfileModalOpen);
+  };
+
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { user } = useContext(UserContext);
+  const {
+    data: userData,
+    isLoading: userIsLoading,
+    isSuccess: userIsSuccess,
+    refetch: refetchUser,
+  } = useGetUserByIDAlt(user?.userId);
 
   const handleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
-    setIsNotificationOpen(false);
   };
 
   const handleNotification = () => {
     setIsNotificationOpen(!isNotificationOpen);
-    setIsProfileDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    // clear auth-token
+    document.cookie =
+      "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    // reload page
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const userLoadingSkeleton = () => {
+    return (
+      <div className="animate-pulse flex gap-2 items-center">
+        <div className="h-10 w-10 rounded-full bg-gray-200"></div>
+        <div className="md:block hidden space-y-2">
+          <h1 className="text-sm bg-gray-200 h-3 w-36 rounded"></h1>
+          <p className="text-xs text-gray-500 bg-gray-200 h-2 w-24 rounded"></p>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -89,57 +139,78 @@ const Header = () => {
         </div>
         <div className="flex space-x-2 ">
           {/* user profile */}
-          <div className="h-10 bg-slate-400 w-10 rounded-full"></div>
-          <div className="md:block hidden">
-            <h1 className="text-sm">Pusaka Manggala</h1>
-            <p className="text-xs text-gray-500">pusakamanggala@gmail.com</p>
-          </div>
-          {/* user profile dropdown */}
-          <div>
-            <button
-              title="Options"
-              type="button"
-              onClick={() => handleProfileDropdown()}
-              className="flex justify-center items-center h-full "
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-5 h-5 text-gray-500"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d={
-                    isProfileDropdownOpen
-                      ? "M4.5 15.75l7.5-7.5 7.5 7.5"
-                      : "M19.5 8.25l-7.5 7.5-7.5-7.5"
-                  }
-                />
-              </svg>
-            </button>
-            {isProfileDropdownOpen && (
-              <div className="absolute right-5 w-48 bg-[#EAF4F4] rounded-lg shadow-lg p-2 space-y-2 text-sky-950 flex flex-col items-start font-semibold">
-                <button
-                  type="button"
-                  title="Edit Profile"
-                  className="hover:underline"
-                >
-                  Edit Profile
-                </button>
-                <button
-                  type="button"
-                  title="Log out"
-                  className="hover:underline"
-                >
-                  Log out
-                </button>
+          {userIsLoading && userLoadingSkeleton()}
+          {userIsSuccess && (
+            <>
+              <img
+                alt={userData.data.name + " profile picture"}
+                src={`${userData.data.imageUrl}?${Date.now()}`}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+              <div className="md:block hidden">
+                <h1 className="text-sm">{userData.data.name}</h1>
+                <p className="text-xs text-gray-500">{userData.data.email}</p>
               </div>
-            )}
-          </div>
+              {/* user profile dropdown */}
+              <div>
+                <button
+                  title="Options"
+                  type="button"
+                  onClick={() => handleProfileDropdown()}
+                  className="flex justify-center items-center h-full "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5 text-gray-500"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d={
+                        isProfileDropdownOpen
+                          ? "M4.5 15.75l7.5-7.5 7.5 7.5"
+                          : "M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      }
+                    />
+                  </svg>
+                </button>
+                {isProfileDropdownOpen && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute right-5 w-48 bg-[#EAF4F4] rounded-lg shadow-lg p-2 space-y-2 text-sky-950 flex flex-col items-start font-semibold"
+                  >
+                    <button
+                      type="button"
+                      title="Edit Profile"
+                      className="hover:underline"
+                      onClick={handleUpdateProfileModal}
+                    >
+                      Edit Profile
+                    </button>
+                    <button
+                      type="button"
+                      title="Log out"
+                      onClick={() => handleLogout()}
+                      className="hover:underline"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+                {isUpdateProfileModalOpen && (
+                  <UpdateUserProfileModal
+                    toggleModal={handleUpdateProfileModal}
+                    userData={userData}
+                    refetchUserData={refetchUser}
+                  />
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
