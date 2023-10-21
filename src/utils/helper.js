@@ -52,3 +52,18 @@ export const paginate = (data, itemsPerPage, currentPage) => {
     data: paginatedData,
   };
 };
+
+export const getRoleByRoleID = (roleID) => {
+  switch (roleID) {
+    case 1:
+      return "Admin";
+    case 2:
+      return "Asisten";
+    case 3:
+      return "Praktikum";
+    case 4:
+      return "Viewer";
+    default:
+      return "Invalid Role ID";
+  }
+};
