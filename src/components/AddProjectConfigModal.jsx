@@ -167,28 +167,26 @@ const AddProjectConfigModal = ({ toggleModal }) => {
             {namespaceIsError && (
               <p className="text-red-600">Failed to fetch namespaces !</p>
             )}
-            {namespaceIsSuccess && (
-              <Select
-                options={namespaceOptions}
-                value={
-                  selectedNamespace
-                    ? namespaceOptions.find(
-                        (option) => option.value === selectedNamespace
-                      )
-                    : null
-                }
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    borderRadius: "0.5rem",
-                    borderColor: "#d1d5db",
-                    borderWidth: "2px",
-                    padding: "2px",
-                  }),
-                }}
-                onChange={(e) => setSelectedNamespace(e ? e.value : null)}
-              />
-            )}
+            <Select
+              options={namespaceOptions}
+              value={
+                selectedNamespace
+                  ? namespaceOptions.find(
+                      (option) => option.value === selectedNamespace
+                    )
+                  : null
+              }
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderRadius: "0.5rem",
+                  borderColor: "#d1d5db",
+                  borderWidth: "2px",
+                  padding: "2px",
+                }),
+              }}
+              onChange={(e) => setSelectedNamespace(e ? e.value : null)}
+            />
           </div>
           <div className="grid md:grid-cols-2 gap-x-3 gap-y-5">
             {/* repository name */}
