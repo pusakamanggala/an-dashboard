@@ -2,55 +2,21 @@ import { useState } from "react";
 import ProjectConfigTable from "../components/ProjectConfigTable";
 import usePageTitle from "../hooks/usePageTitle";
 import AddProjectConfigModal from "../components/AddProjectConfigModal";
+import { useGetProjectList } from "../hooks/useGetProjectList";
+import TableSkeleton from "../components/TableSkeleton";
 
 const ProjectConfig = () => {
   const pageTitle = usePageTitle();
   const [addProjectConfigModalIsShow, setAddProjectConfigModalIsShow] =
     useState(false);
 
-  //   project config dummy data
-  const projectConfigData = [
-    {
-      projectName: "Manual Book",
-      projectOwner: "John Doe",
-      repositoryName: "manual-book",
-      gitlabProjectID: "Git1231231",
-      gitlabAccessToken: "wmasdj13gl",
-      gitlabUsernameDeployToken: "deployproject",
-    },
-    {
-      projectName: "Awesome App",
-      projectOwner: "Alice Smith",
-      repositoryName: "awesome-app",
-      gitlabProjectID: "Git4567890",
-      gitlabAccessToken: "xyzabc789",
-      gitlabUsernameDeployToken: "deployawesomeapp",
-    },
-    {
-      projectName: "Website Redesign",
-      projectOwner: "Eva Johnson",
-      repositoryName: "website-redesign",
-      gitlabProjectID: "Git9876543",
-      gitlabAccessToken: "qwert7890",
-      gitlabUsernameDeployToken: "deploywebsiteredesign",
-    },
-    {
-      projectName: "Mobile Game Project",
-      projectOwner: "Bob Williams",
-      repositoryName: "mobile-game",
-      gitlabProjectID: "Git5678901",
-      gitlabAccessToken: "mnbvcx456",
-      gitlabUsernameDeployToken: "deploymobilegame",
-    },
-    {
-      projectName: "Data Analysis Tool",
-      projectOwner: "Linda Davis",
-      repositoryName: "data-analysis",
-      gitlabProjectID: "Git3456789",
-      gitlabAccessToken: "plmko0987",
-      gitlabUsernameDeployToken: "deploydataanalysis",
-    },
-  ];
+  const {
+    data: projectListData,
+    isLoading: projectListIsLoading,
+    isError: projectListIsError,
+    isSuccess: projectListIsSuccess,
+    error: projectListError,
+  } = useGetProjectList();
 
   const toggleModalAddProjectConfig = () => {
     setAddProjectConfigModalIsShow(!addProjectConfigModalIsShow);
@@ -83,7 +49,17 @@ const ProjectConfig = () => {
             <span>Add Project</span>
           </button>
         </div>
-        <ProjectConfigTable projectConfigData={projectConfigData} />
+        {projectListIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
+        {projectListIsSuccess && (
+          <ProjectConfigTable
+            projectConfigData={projectListData.data.projects}
+          />
+        )}
+        {projectListIsError && (
+          <p className="text-sky-700 font-semibold">
+            {projectListError.response.data.message}
+          </p>
+        )}
       </section>
       {addProjectConfigModalIsShow && (
         <AddProjectConfigModal toggleModal={toggleModalAddProjectConfig} />

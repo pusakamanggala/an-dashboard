@@ -1,11 +1,20 @@
 import { useState } from "react";
 import infoIcon from "../icons/info-alt.svg";
 import PropTypes from "prop-types";
+import { useGetDetailProject } from "../hooks/useGetDetailProject";
 
-const ProjectConfigDetailModal = ({ toggleModal }) => {
+const ProjectConfigDetailModal = ({ toggleModal, projectID }) => {
   const [showAccessToken, setShowAccessToken] = useState(false);
   const [showDeployToken, setShowDeployToken] = useState(false);
   const [showPasswordToken, setShowPasswordToken] = useState(false);
+
+  const {
+    data: detailProjectData,
+    isLoading: detailProjectIsLoading,
+    isError: detailProjectIsError,
+    isSuccess: detailProjectIsSuccess,
+    error: detailProjectError,
+  } = useGetDetailProject(projectID);
 
   const toggleTokenVisibility = (type) => {
     switch (type) {
@@ -51,6 +60,21 @@ const ProjectConfigDetailModal = ({ toggleModal }) => {
     );
   };
 
+  const loadingSkeleton = () => {
+    return (
+      <div className="space-y-5 overflow-y-auto p-7">
+        <div className="grid md:grid-cols-2 gap-x-4 gap-y-5">
+          {[1, 2, 3, 4, 5, 6].map((index) => (
+            <div className="space-y-2" key={index}>
+              <div className="font-semibold h-7 w-36 bg-gray-200 animate-pulse rounded-md"></div>
+              <div className="text-gray-500 h-5 bg-gray-200 animate-pulse rounded-md"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="fixed inset-0 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5">
       <div className="max-h-full w-[564px] bg-white rounded-xl relative flex flex-col">
@@ -77,93 +101,113 @@ const ProjectConfigDetailModal = ({ toggleModal }) => {
             </svg>
           </button>
         </div>
-        {/* project config detail */}
-        <div className="space-y-5 overflow-y-auto p-7">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h1 className="font-semibold">Project Name</h1>
-              <p className="text-gray-500">projectName</p>
-            </div>
-            <div className="space-y-2">
-              <h1 className="font-semibold">Namespace</h1>
-              <p className="text-gray-500">namespace</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h1 className="font-semibold">Repository Name</h1>
-              <p className="text-gray-500">repoName</p>
-            </div>
-            <div className="space-y-2">
-              <h1 className="font-semibold">Project Owner</h1>
-              <p className="text-gray-500">ownerName</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h1 className="font-semibold">Gitlab Project ID</h1>
-              <p className="text-gray-500">gitlabProjectID</p>
-            </div>
-            <div className="space-y-2">
-              <h1 className="font-semibold">Gitlab Access Token</h1>
-              <div className="flex justify-between">
+        {detailProjectIsLoading && loadingSkeleton()}
+        {detailProjectIsError && (
+          <p className="text-center mb-5 text-red-600">
+            {detailProjectError?.response?.data?.message ||
+              "Something went wrong"}
+          </p>
+        )}
+        {detailProjectIsSuccess && (
+          <div className="space-y-5 overflow-y-auto p-7">
+            <div className="grid md:grid-cols-2 gap-x-4 gap-y-5">
+              <div className="space-y-2">
+                <h1 className="font-semibold">Project Name</h1>
                 <p className="text-gray-500">
-                  {showAccessToken ? "accessToken" : "********"}
+                  {detailProjectData.data.projectName}
                 </p>
-                <button
-                  type="button"
-                  title={
-                    showAccessToken ? "Hide Access Token" : "Show Access Token"
-                  }
-                  className="hover:text-sky-700"
-                  onClick={() => toggleTokenVisibility("access")}
-                >
-                  {tokenVisibilityIcon(showAccessToken)}
-                </button>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Namespace</h1>
+                <p className="text-gray-500">
+                  {detailProjectData.data.namespace}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Repository Name</h1>
+                <p className="text-gray-500">
+                  {detailProjectData.data.gitlabRepositoryName}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Project Owner</h1>
+                <p className="text-gray-500">
+                  {detailProjectData.data.projectOwner}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Gitlab Project ID</h1>
+                <p className="text-gray-500">gitlabProjectID</p>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Gitlab Access Token</h1>
+                <div className="flex justify-between">
+                  <p className="text-gray-500">
+                    {showAccessToken
+                      ? detailProjectData.data.gitlabAccessToken
+                      : "********"}
+                  </p>
+                  <button
+                    type="button"
+                    title={
+                      showAccessToken
+                        ? "Hide Access Token"
+                        : "Show Access Token"
+                    }
+                    className="hover:text-sky-700"
+                    onClick={() => toggleTokenVisibility("access")}
+                  >
+                    {tokenVisibilityIcon(showAccessToken)}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Gitlab Username Deploy Token</h1>
+                <div className="flex justify-between">
+                  <p className="text-gray-500">
+                    {showDeployToken
+                      ? detailProjectData.data.gitlabDeployToken
+                      : "********"}
+                  </p>
+                  <button
+                    type="button"
+                    title={
+                      showDeployToken
+                        ? "Hide Deploy Token"
+                        : "Show Deploy Token"
+                    }
+                    className="hover:text-sky-700"
+                    onClick={() => toggleTokenVisibility("deploy")}
+                  >
+                    {tokenVisibilityIcon(showDeployToken)}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h1 className="font-semibold">Gitlab Password Deploy Token</h1>
+                <div className="flex justify-between">
+                  <p className="text-gray-500">
+                    {showPasswordToken
+                      ? detailProjectData.data.gitlabDeployPassword
+                      : "********"}
+                  </p>
+                  <button
+                    type="button"
+                    title={
+                      showPasswordToken
+                        ? "Hide Password Token"
+                        : "Show Password Token"
+                    }
+                    className="hover:text-sky-700"
+                    onClick={() => toggleTokenVisibility("password")}
+                  >
+                    {tokenVisibilityIcon(showPasswordToken)}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h1 className="font-semibold">Gitlab Username Deploy Token</h1>
-              <div className="flex justify-between">
-                <p className="text-gray-500">
-                  {showDeployToken ? "deployToken" : "********"}
-                </p>
-                <button
-                  type="button"
-                  title={
-                    showDeployToken ? "Hide Deploy Token" : "Show Deploy Token"
-                  }
-                  className="hover:text-sky-700"
-                  onClick={() => toggleTokenVisibility("deploy")}
-                >
-                  {tokenVisibilityIcon(showDeployToken)}
-                </button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h1 className="font-semibold">Gitlab Password Deploy Token</h1>
-              <div className="flex justify-between">
-                <p className="text-gray-500">
-                  {showPasswordToken ? "passToken" : "********"}
-                </p>
-                <button
-                  type="button"
-                  title={
-                    showPasswordToken
-                      ? "Hide Password Token"
-                      : "Show Password Token"
-                  }
-                  className="hover:text-sky-700"
-                  onClick={() => toggleTokenVisibility("password")}
-                >
-                  {tokenVisibilityIcon(showPasswordToken)}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );
@@ -171,6 +215,7 @@ const ProjectConfigDetailModal = ({ toggleModal }) => {
 
 ProjectConfigDetailModal.propTypes = {
   toggleModal: PropTypes.func.isRequired,
+  projectID: PropTypes.string.isRequired,
 };
 
 export default ProjectConfigDetailModal;

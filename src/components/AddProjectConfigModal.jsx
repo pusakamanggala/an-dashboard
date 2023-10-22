@@ -1,45 +1,109 @@
-import { useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import PaperPlusIcon from "../icons/paper-plus.svg";
 import PropTypes from "prop-types";
+import { useAddProject } from "../hooks/useAddProject";
+import { useGetNamespace } from "../hooks/useGetNamespace";
+import Select from "react-select";
+import UserContext from "../context/UserContext";
+import useNotification from "../hooks/useNotification";
+import { useGetMembers } from "../hooks/useGetMembers";
 
 const AddProjectConfigModal = ({ toggleModal }) => {
+  const { userRole, user } = useContext(UserContext);
+
   const projectNameRef = useRef(null);
-  const namespaceRef = useRef(null);
   const repositoryNameRef = useRef(null);
-  const projectOwnerRef = useRef(null);
+  const [projectOwner, setProjectOwner] = useState(
+    userRole === "admin" ? "" : user.username
+  );
   const gitlabProjectIDRef = useRef(null);
   const gitlabAccessTokenRef = useRef(null);
   const gitlabUsernameDeployTokenRef = useRef(null);
   const gitlabPasswordDeployTokenRef = useRef(null);
+  const [selectedNamespace, setSelectedNamespace] = useState(null);
+
+  const addProjectMutation = useAddProject();
+
+  const {
+    data: namespaceData,
+    isError: namespaceIsError,
+    isSuccess: namespaceIsSuccess,
+  } = useGetNamespace(userRole);
+
+  const { data: memberData } = useGetMembers(userRole);
+
+  // regular user can only use their own namespace
+  const namespaceOptions =
+    userRole === "admin"
+      ? (namespaceData?.data?.namespaces || []).map((namespace) => ({
+          value: namespace,
+          label: namespace,
+        }))
+      : (user.namespaces || []).map((namespace) => ({
+          value: namespace,
+          label: namespace,
+        }));
+
+  const membersOptions = (memberData?.data || []).map((member) => ({
+    value: member.username,
+    label: member.username,
+  }));
+
+  // notification
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+  useEffect(() => {
+    if (addProjectMutation.isLoading) {
+      notifyLoading("Adding project config...");
+    } else if (addProjectMutation.isSuccess) {
+      notifySuccess("Project config added successfully");
+      addProjectMutation.reset();
+      // reset value
+      projectNameRef.current.value = "";
+      repositoryNameRef.current.value = "";
+      setProjectOwner(null);
+      gitlabProjectIDRef.current.value = "";
+      gitlabAccessTokenRef.current.value = "";
+      gitlabUsernameDeployTokenRef.current.value = "";
+      gitlabPasswordDeployTokenRef.current.value = "";
+      setSelectedNamespace(null);
+    } else if (addProjectMutation.isError) {
+      notifyError(
+        addProjectMutation.error?.response?.data?.message ||
+          "Something went wrong"
+      );
+      addProjectMutation.reset();
+    }
+  }, [addProjectMutation, notifyLoading, notifySuccess, notifyError]);
 
   const handleAddProjectConfig = () => {
     // validation
     if (
       !projectNameRef.current.value ||
-      !namespaceRef.current.value ||
+      !selectedNamespace ||
       !repositoryNameRef.current.value ||
-      !projectOwnerRef.current.value ||
+      !projectOwner ||
       !gitlabProjectIDRef.current.value ||
       !gitlabAccessTokenRef.current.value ||
       !gitlabUsernameDeployTokenRef.current.value ||
       !gitlabPasswordDeployTokenRef.current.value
     ) {
-      alert("Please fill all fields");
+      notifyWarning("Please fill all the fields");
       return;
     }
 
     const data = {
       projectName: projectNameRef.current.value,
-      namespace: namespaceRef.current.value,
-      repositoryName: repositoryNameRef.current.value,
-      projectOwner: projectOwnerRef.current.value,
-      gitlabProjectID: gitlabProjectIDRef.current.value,
+      namespace: selectedNamespace,
+      gitlabRepositoryName: repositoryNameRef.current.value,
+      projectOwner: projectOwner,
+      gitlabProjectId: gitlabProjectIDRef.current.value,
       gitlabAccessToken: gitlabAccessTokenRef.current.value,
-      gitlabUsernameDeployToken: gitlabUsernameDeployTokenRef.current.value,
-      gitlabPasswordDeployToken: gitlabPasswordDeployTokenRef.current.value,
+      gitlabDeployToken: gitlabUsernameDeployTokenRef.current.value,
+      gitlabDeployPassword: gitlabPasswordDeployTokenRef.current.value,
     };
 
-    console.log(data);
+    addProjectMutation.mutate({ data });
   };
 
   const handleCloseModal = () => {
@@ -87,6 +151,12 @@ const AddProjectConfigModal = ({ toggleModal }) => {
               id="project_name"
               placeholder="Project Name"
               className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+              // prevent user from typing space
+              onKeyDown={(e) => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
           {/* namespace */}
@@ -94,20 +164,33 @@ const AddProjectConfigModal = ({ toggleModal }) => {
             <label htmlFor="namespace" className="font-semibold">
               Namespace
             </label>
-            <select
-              className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 flex-1"
-              defaultValue={""}
-              id="namespace"
-              ref={namespaceRef}
-            >
-              <option value="" disabled>
-                Select Namespaces
-              </option>
-              <option value="1">Select 1</option>
-              <option value="2">Select 2</option>
-            </select>
+            {namespaceIsError && (
+              <p className="text-red-600">Failed to fetch namespaces !</p>
+            )}
+            {namespaceIsSuccess && (
+              <Select
+                options={namespaceOptions}
+                value={
+                  selectedNamespace
+                    ? namespaceOptions.find(
+                        (option) => option.value === selectedNamespace
+                      )
+                    : null
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "0.5rem",
+                    borderColor: "#d1d5db",
+                    borderWidth: "2px",
+                    padding: "2px",
+                  }),
+                }}
+                onChange={(e) => setSelectedNamespace(e ? e.value : null)}
+              />
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid md:grid-cols-2 gap-x-3 gap-y-5">
             {/* repository name */}
             <div className="flex flex-col">
               <label htmlFor="repository_name" className="font-semibold">
@@ -119,6 +202,12 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 id="repository_name"
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                // prevent user from typing space
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
             {/* project owner */}
@@ -126,16 +215,39 @@ const AddProjectConfigModal = ({ toggleModal }) => {
               <label htmlFor="project_owner" className="font-semibold">
                 Project Owner
               </label>
-              <input
-                type="text"
-                ref={projectOwnerRef}
-                id="project_owner"
-                placeholder="Project Name"
-                className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-              />
+              {userRole === "admin" ? (
+                <Select
+                  options={membersOptions}
+                  value={
+                    projectOwner
+                      ? membersOptions.find(
+                          (option) => option.value === projectOwner
+                        )
+                      : null
+                  }
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      borderRadius: "0.5rem",
+                      borderColor: "#d1d5db",
+                      borderWidth: "2px",
+                      padding: "2px",
+                    }),
+                  }}
+                  onChange={(e) => setProjectOwner(e ? e.value : null)}
+                />
+              ) : (
+                <input
+                  type="text"
+                  disabled
+                  onChange={(e) => setProjectOwner(e.target.value)}
+                  value={projectOwner}
+                  id="project_owner"
+                  placeholder="Project Name"
+                  className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                />
+              )}
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             {/* gilab project id */}
             <div className="flex flex-col">
               <label htmlFor="gitlab_project_id" className="font-semibold">
@@ -162,8 +274,6 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             {/* gitlab username deploy token */}
             <div className="flex flex-col">
               <label
@@ -203,9 +313,14 @@ const AddProjectConfigModal = ({ toggleModal }) => {
               title="Add Project Config"
               type="button"
               onClick={handleAddProjectConfig}
-              className="bg-sky-700 px-3 py-2 rounded-md text-white hover:bg-sky-950 transition-colors duration-300"
+              className={`" ${
+                addProjectMutation.isLoading
+                  ? "bg-sky-300"
+                  : "bg-sky-700 hover:bg-sky-950 transition-colors duration-300"
+              }  px-3 py-2 rounded-md text-white "`}
+              disabled={addProjectMutation.isLoading}
             >
-              Add
+              {addProjectMutation.isLoading ? "Adding Project..." : "Add"}
             </button>
           </div>
         </div>
