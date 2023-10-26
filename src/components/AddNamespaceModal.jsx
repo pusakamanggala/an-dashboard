@@ -35,6 +35,7 @@ const AddNamespaceModal = ({ toggleModal }) => {
       notifyLoading("Adding namespace...");
     } else if (addNamespaceMutation.isSuccess) {
       notifySuccess("Namespace added successfully");
+      toggleModal();
       addNamespaceMutation.reset();
     } else if (addNamespaceMutation.isError) {
       notifyError(
@@ -49,6 +50,7 @@ const AddNamespaceModal = ({ toggleModal }) => {
     notifyLoading,
     notifySuccess,
     notifyWarning,
+    toggleModal,
   ]);
 
   return (
