@@ -103,8 +103,7 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
       data.password = password;
     }
 
-    // check if theres any changes
-    if (Object.keys(data).length === 0) {
+    if (Object.values(data).every((value) => !value)) {
       notifyWarning("No changes made");
       return;
     }
@@ -246,17 +245,11 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value.trim())}
                   autoComplete="off"
                   id="username"
                   placeholder="Username"
                   className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-                  disabled={updateUserProfileMutation.isLoading}
-                  onKeyDown={(e) => {
-                    if (e.key === " ") {
-                      e.preventDefault();
-                    }
-                  }}
+                  disabled
                 />
               </div>
               {/* password */}
