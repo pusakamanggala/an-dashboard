@@ -2,11 +2,30 @@ import { useEffect, useRef, useState } from "react";
 import DeleteIcon from "../icons/delete.svg";
 import EditIcon from "../icons/edit.svg";
 import PropTypes from "prop-types";
+import { getRoleByRoleID, formatTimestamp, paginate } from "../utils/helper";
+import { useSearchParams } from "react-router-dom";
+import { useDeleteMember } from "../hooks/useDeleteMember";
+import useNotification from "../hooks/useNotification";
+import UpdateUserModal from "./UpdateUserModal";
 
 const MembersTable = ({ membersdata }) => {
+  const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
+  const [selectedUserID, setSelectedUserID] = useState(null);
+
+  const handleUpdateUserModal = () => {
+    setIsUpdateUserModalOpen(!isUpdateUserModalOpen);
+  };
+
+  // Pagination
+  const itemsPerPage = 10;
+  const [paginationParam, setPaginationParam] = useSearchParams({
+    page: "1",
+  });
+  const currentPage = parseInt(paginationParam.get("page"));
+  const paginatedMembers = paginate(membersdata, itemsPerPage, currentPage);
+
   // an array of boolean values to track the menu state for each row
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
-
   const toggleOptionsMenu = (index) => {
     if (openMenuIndex === index) {
       // Clicking the same option button should close the menu
@@ -15,10 +34,8 @@ const MembersTable = ({ membersdata }) => {
       setOpenMenuIndex(index);
     }
   };
-
   // a ref to the options menu to detect clicks inside the menu
   const optionsMenuRef = useRef(null);
-
   useEffect(() => {
     const handleOutsideClick = (event) => {
       // Check if the click occurred outside of the menu
@@ -29,37 +46,35 @@ const MembersTable = ({ membersdata }) => {
         setOpenMenuIndex(null);
       }
     };
-
     // Add event listener for clicks on the entire window
     window.addEventListener("click", handleOutsideClick);
-
     // Cleanup the event listener when the component unmounts
     return () => {
       window.removeEventListener("click", handleOutsideClick);
     };
   }, [optionsMenuRef]);
 
-  const getRole = (role) => {
-    switch (role) {
-      case 1:
-        return "Admin";
-      case 2:
-        return "Asisten";
-      case 3:
-        return "Praktikum";
-      case 4:
-        return "Viewer";
-      default:
-        return "Role not found";
-    }
-  };
-
+  // Delete User
+  const deleteMemberMutation = useDeleteMember();
   const handleDeleteMembers = (name, userId) => {
     window.confirm(`Are you sure you want to delete ${name}?`) &&
-      // change this to the delete API call
-      alert(`${name} userId ${userId} has been deleted`);
+      deleteMemberMutation.mutate(userId);
     setOpenMenuIndex(null);
   };
+
+  // Notification
+  const { notifyLoading, notifySuccess, notifyError } = useNotification();
+  useEffect(() => {
+    if (deleteMemberMutation.isLoading) {
+      notifyLoading("Deleting user...");
+    } else if (deleteMemberMutation.isSuccess) {
+      notifySuccess("User has been deleted");
+      deleteMemberMutation.reset();
+    } else if (deleteMemberMutation.isError) {
+      notifyError("Failed to delete user!");
+      deleteMemberMutation.reset();
+    }
+  }, [deleteMemberMutation, notifyLoading, notifySuccess, notifyError]);
 
   return (
     <>
@@ -90,7 +105,7 @@ const MembersTable = ({ membersdata }) => {
             </tr>
           </thead>
           <tbody>
-            {membersdata.map((membersdata, index) => (
+            {paginatedMembers.data.map((membersdata, index) => (
               <tr className="text-center" key={index}>
                 <td className="text-start">
                   <ul>
@@ -107,22 +122,22 @@ const MembersTable = ({ membersdata }) => {
                 </td>
                 <td>
                   <p className="line-clamp-1 text-start px-6">
-                    {getRole(membersdata.role)}
+                    {getRoleByRoleID(membersdata.roleId)}
                   </p>
                 </td>
                 <td>
-                  <p className="line-clamp-1 text-start px-6">
-                    {membersdata.namespace}
-                  </p>
-                </td>
-                <td>
-                  <p className="line-clamp-2 text-start px-6 w-32">
-                    {membersdata.created_at}
+                  <p className="line-clamp-2 text-start px-6">
+                    {membersdata.namespaces.join(", ")}
                   </p>
                 </td>
                 <td>
                   <p className="line-clamp-2 text-start px-6 w-32">
-                    {membersdata.updated_at}
+                    {formatTimestamp(membersdata.createdAt)}
+                  </p>
+                </td>
+                <td>
+                  <p className="line-clamp-2 text-start px-6 w-32">
+                    {formatTimestamp(membersdata.updatedAt)}
                   </p>
                 </td>
                 <td>
@@ -154,19 +169,29 @@ const MembersTable = ({ membersdata }) => {
                       <div
                         ref={optionsMenuRef}
                         className={`absolute bg-white border border-gray-300 rounded-md right-5 shadow-md z-50 text-start w-28 p-2 ${
-                          index >= 2 ? "bottom-7" : ""
+                          index >= paginatedMembers.data.length - 2
+                            ? "bottom-7"
+                            : ""
                         }`}
                       >
                         <ul className="space-y-3">
                           <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                            <button className="flex space-x-2 items-center">
+                            <button
+                              className="flex space-x-2 items-center w-full"
+                              type="button"
+                              title="Edit User"
+                              onClick={() => {
+                                handleUpdateUserModal();
+                                setSelectedUserID(membersdata.userId);
+                              }}
+                            >
                               <img src={EditIcon} alt="" />
                               <span>Edit</span>
                             </button>
                           </li>
                           <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
                             <button
-                              className="flex space-x-2 items-center"
+                              className="flex space-x-2 items-center w-full"
                               title="Delete User"
                               onClick={() =>
                                 handleDeleteMembers(
@@ -190,12 +215,24 @@ const MembersTable = ({ membersdata }) => {
         </table>
       </section>
       <section className="flex justify-between font-semibold">
-        <p>Page 1 of 2</p>
+        <p>
+          Page {paginatedMembers.currentPage} of {paginatedMembers.totalPages}
+        </p>
         <div className="flex gap-4">
           <button
-            className="flex gap-1 items-center hover:text-sky-700"
+            className={`flex gap-1 items-center  ${
+              paginatedMembers.currentPage === 1
+                ? "text-gray-400"
+                : "hover:text-sky-700"
+            }`}
             title="Previous Page"
             type="button"
+            onClick={() => {
+              if (currentPage > 1) {
+                setPaginationParam({ page: (currentPage - 1).toString() });
+              }
+            }}
+            disabled={paginatedMembers.currentPage === 1}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -214,9 +251,21 @@ const MembersTable = ({ membersdata }) => {
             Previous
           </button>
           <button
-            className="flex gap-1 items-center hover:text-sky-700"
+            className={`flex gap-1 items-center  ${
+              paginatedMembers.currentPage === paginatedMembers.totalPages
+                ? "text-gray-400"
+                : "hover:text-sky-700"
+            }`}
             title="Next Page"
             type="button"
+            onClick={() => {
+              if (currentPage < paginatedMembers.totalPages) {
+                setPaginationParam({ page: (currentPage + 1).toString() });
+              }
+            }}
+            disabled={
+              paginatedMembers.currentPage === paginatedMembers.totalPages
+            }
           >
             Next
             <svg
@@ -236,6 +285,12 @@ const MembersTable = ({ membersdata }) => {
           </button>
         </div>
       </section>
+      {isUpdateUserModalOpen && (
+        <UpdateUserModal
+          toggleModal={handleUpdateUserModal}
+          userID={selectedUserID}
+        />
+      )}
     </>
   );
 };

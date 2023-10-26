@@ -2,80 +2,23 @@ import { useState } from "react";
 import AddUserModal from "../components/AddUserModal";
 import MembersTable from "../components/MembersTable";
 import usePageTitle from "../hooks/usePageTitle";
+import { useGetMembers } from "../hooks/useGetMembers";
+import TableSkeleton from "../components/TableSkeleton";
 
 const Members = () => {
   const pageTitle = usePageTitle();
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const {
+    data: membersData,
+    isLoading: membersIsLoading,
+    isSuccess: membersIsSuccess,
+    isError: membersIsError,
+    error: membersError,
+  } = useGetMembers("admin");
 
   const handleAddUserModal = () => {
     setIsAddUserModalOpen(!isAddUserModalOpen);
   };
-
-  //members dummy data
-  const members = [
-    {
-      userId: 1321,
-      name: "John Doe",
-      username: "johndoe",
-      role: 1,
-      email: "john.doe@example.com",
-      namespace: "john-doe",
-      created_at: "2021-08-20 10:00:00",
-      updated_at: "2021-08-20 10:00:00",
-    },
-    {
-      userId: 1322,
-      name: "Jane Smith Johnson",
-      username: "janesmith",
-      role: 2,
-      email: "jane.smith@example.com",
-      namespace: "jane-smith",
-      created_at: "2021-08-21 11:30:00",
-      updated_at: "2021-08-21 11:30:00",
-    },
-    {
-      userId: 1323,
-      name: "Robert Taylor Brown",
-      username: "robertbrown",
-      role: 3,
-      email: "robert.brown@example.com",
-      namespace: "robert-brown",
-      created_at: "2021-08-22 14:15:00",
-      updated_at: "2021-08-22 14:15:00",
-    },
-    {
-      userId: 1324,
-      name: "Elizabeth Johnson Anderson",
-      username: "elizabethanderson",
-      role: 4,
-      email: "elizabeth.anderson@example.com",
-      namespace: "elizabeth-anderson",
-      created_at: "2021-08-23 16:45:00",
-      updated_at: "2021-08-23 16:45:00",
-    },
-    {
-      userId: 1325,
-      name: "Christopher David Williams",
-      username: "chriswilliams",
-      role: 1,
-      email: "chris.williams@example.com",
-      namespace: "chris-williams",
-      created_at: "2021-08-24 20:10:00",
-      updated_at: "2021-08-24 20:10:00",
-    },
-    {
-      userId: 1326,
-      name: "Maria Rodriguez Gonzalez",
-      username: "mariagonzalez",
-      role: 2,
-      email: "maria.gonzalez@example.com",
-      namespace: "maria-gonzalez",
-      created_at: "2021-08-25 22:20:00",
-      updated_at: "2021-08-25 22:20:00",
-    },
-  ];
-
-  console.log(members);
 
   return (
     <>
@@ -129,7 +72,13 @@ const Members = () => {
             </button>
           </div>
         </div>
-        <MembersTable membersdata={members} />
+        {membersIsSuccess && <MembersTable membersdata={membersData.data} />}
+        {membersIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
+        {membersIsError && (
+          <p className="font-semibold text-center text-red-600">
+            {membersError?.response?.data?.message || "Something went wrong"}
+          </p>
+        )}
       </section>
       {isAddUserModalOpen && <AddUserModal toggleModal={handleAddUserModal} />}
     </>

@@ -1,15 +1,34 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import PaperPlusIcon from "../icons/paper-plus.svg";
 import PropTypes from "prop-types";
+import { useAddMember } from "../hooks/useAddMember";
+import { useGetNamespace } from "../hooks/useGetNamespace";
+import Select from "react-select";
+import useNotification from "../hooks/useNotification";
 
 const AddUserModal = ({ toggleModal }) => {
   const userFullNameRef = useRef(null);
   const usernameRef = useRef(null);
   const passwordRef = useRef(null);
   const userEmailRef = useRef(null);
-  const userRoleRef = useRef(null);
-  const userNamespaceRef = useRef(null);
+  const [userRole, setUserRole] = useState(null); // [1,2,3,4]
+  const [userNamespaces, setUserNamespaces] = useState([]);
 
+  const { data: namespacesData } = useGetNamespace("admin");
+
+  const namespaceOption = namespacesData?.data?.namespaces.map((namespace) => ({
+    value: namespace,
+    label: namespace,
+  }));
+
+  const userRoleOption = [
+    { value: "1", label: "Admin" },
+    { value: "2", label: "Asisten" },
+    { value: "3", label: "Praktikum" },
+    { value: "4", label: "Viewer" },
+  ];
+
+  const addMemberMutation = useAddMember();
   const handleAddUser = () => {
     // validation
     if (
@@ -17,52 +36,66 @@ const AddUserModal = ({ toggleModal }) => {
       !usernameRef.current.value ||
       !passwordRef.current.value ||
       !userEmailRef.current.value ||
-      !userRoleRef.current.value ||
-      !userNamespaceRef.current.value
+      !userRole
     ) {
-      alert("Please fill all the fields");
+      notifyWarning("Please fill all the fields");
       return;
     }
 
     const emailRegex = /\S+@\S+\.\S+/;
-
     if (!emailRegex.test(userEmailRef.current.value)) {
-      alert("Please enter a valid email");
+      notifyWarning("Invalid email");
       return;
     }
 
     const usernameRegex = /^[a-z0-9]+$/;
-
-    if (!usernameRegex.test(usernameRef.current.value)) {
-      alert("Please enter a valid username");
+    if (
+      !usernameRegex.test(usernameRef.current.value) ||
+      usernameRef.current.value.length < 6
+    ) {
+      notifyWarning(
+        "Username must be at least 6 characters long and only contain lowercase letters and numbers"
+      );
       return;
     }
 
     // password need to be at least 8 characters long
     if (passwordRef.current.value.length < 8) {
-      alert("Password must be at least 8 characters long");
+      notifyWarning("Password must be at least 8 characters long");
       return;
     }
 
     const data = {
-      user_full_name: userFullNameRef.current.value,
+      name: userFullNameRef.current.value.trim(),
       username: usernameRef.current.value,
       password: passwordRef.current.value,
       email: userEmailRef.current.value,
-      role: userRoleRef.current.value,
-      namespace: userNamespaceRef.current.value,
+      roleId: userRole,
+      namespaces: userNamespaces,
     };
-
-    // change this to the add user API call
-    console.log(data);
-    // Clear input fields when the user is added
-    userFullNameRef.current.value = "";
-    usernameRef.current.value = "";
-    passwordRef.current.value = "";
-    userEmailRef.current.value = "";
-    userRoleRef.current.value = "";
-    userNamespaceRef.current.value = "";
+    addMemberMutation.mutate({ data });
   };
+
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+
+  useEffect(() => {
+    if (addMemberMutation.isLoading) {
+      notifyLoading("Adding user...");
+    } else if (addMemberMutation.isSuccess) {
+      notifySuccess("User added successfully");
+      userFullNameRef.current.value = null;
+      usernameRef.current.value = null;
+      passwordRef.current.value = null;
+      userEmailRef.current.value = null;
+      setUserRole(null);
+      setUserNamespaces([]);
+      addMemberMutation.reset();
+    } else if (addMemberMutation.isError) {
+      notifyError(addMemberMutation.error?.response?.data?.message || "Error");
+      addMemberMutation.reset();
+    }
+  }, [addMemberMutation, notifyLoading, notifySuccess, notifyError]);
 
   return (
     <section className="fixed inset-0 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5">
@@ -73,7 +106,12 @@ const AddUserModal = ({ toggleModal }) => {
             <img src={PaperPlusIcon} alt="" className="h-9 w-9" />
             <h1 className="font-semibold text-lg">Add User</h1>
           </div>
-          <button title="Close" type="button" onClick={toggleModal}>
+          <button
+            title="Close"
+            type="button"
+            onClick={toggleModal}
+            disabled={addMemberMutation.isLoading}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -104,6 +142,7 @@ const AddUserModal = ({ toggleModal }) => {
               id="user_full_name"
               placeholder="Fullname"
               className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+              disabled={addMemberMutation.isLoading}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -119,6 +158,12 @@ const AddUserModal = ({ toggleModal }) => {
                 id="username"
                 placeholder="Username"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={addMemberMutation.isLoading}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
             {/* password */}
@@ -131,7 +176,13 @@ const AddUserModal = ({ toggleModal }) => {
                 ref={passwordRef}
                 id="password"
                 placeholder="Password"
+                disabled={addMemberMutation.isLoading}
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>
@@ -147,6 +198,12 @@ const AddUserModal = ({ toggleModal }) => {
               id="email"
               placeholder="example@email.com"
               className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+              disabled={addMemberMutation.isLoading}
+              onKeyDown={(e) => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                }
+              }}
             />
           </div>
           {/* role */}
@@ -154,41 +211,61 @@ const AddUserModal = ({ toggleModal }) => {
             <label htmlFor="user_role" className="font-semibold">
               Role
             </label>
-            <select
-              name="user_role"
-              id="user_role"
-              ref={userRoleRef}
-              className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-              defaultValue={""}
-            >
-              <option value="" disabled>
-                Select Role
-              </option>
-              <option value="1">Admin</option>
-              <option value="2">Asisten</option>
-              <option value="3">Praktikum</option>
-              <option value="4">Viewer</option>
-            </select>
+            <Select
+              options={userRoleOption}
+              isDisabled={addMemberMutation.isLoading}
+              inputId="user_role"
+              value={
+                userRole
+                  ? userRoleOption.find((option) => option.value == userRole)
+                  : null
+              }
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderRadius: "0.5rem",
+                  borderColor: "#d1d5db",
+                  borderWidth: "2px",
+                  padding: "2px",
+                }),
+              }}
+              onChange={(e) => setUserRole(e ? e.value : null)}
+            />
           </div>
           {/* deployment access / namespace */}
-          {/* change this to react-select multi select */}
           <div className="flex flex-col">
             <label htmlFor="deployment_access" className="font-semibold">
-              Deployment Access
+              Deployment Access{" "}
+              <span className="text-gray-400 font-normal">(optional)</span>
             </label>
-            <select
-              name="deployment_access"
-              id="deployment_access"
-              ref={userNamespaceRef}
-              className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-              defaultValue={""}
-            >
-              <option value="" disabled>
-                Select Namespace
-              </option>
-              <option value="1">value 1</option>
-              <option value="2">value 2</option>
-            </select>
+            <Select
+              options={namespaceOption}
+              isMulti={true}
+              inputId="deployment_access"
+              isDisabled={addMemberMutation.isLoading}
+              value={
+                userNamespaces
+                  ? userNamespaces.map((value) =>
+                      namespaceOption.find((option) => option.value === value)
+                    )
+                  : []
+              }
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  borderRadius: "0.5rem",
+                  borderColor: "#d1d5db",
+                  borderWidth: "2px",
+                  padding: "2px",
+                }),
+              }}
+              onChange={(selectedOptions) => {
+                const selectedValues = selectedOptions
+                  ? selectedOptions.map((option) => option.value)
+                  : [];
+                setUserNamespaces(selectedValues);
+              }}
+            />
           </div>
           {/* save button */}
           <div className="flex justify-end">
@@ -197,8 +274,9 @@ const AddUserModal = ({ toggleModal }) => {
               type="button"
               onClick={handleAddUser}
               className="bg-sky-700 px-3 py-2 rounded-md text-white hover:bg-sky-950 transition-colors duration-300"
+              disabled={addMemberMutation.isLoading}
             >
-              Save
+              {addMemberMutation.isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
