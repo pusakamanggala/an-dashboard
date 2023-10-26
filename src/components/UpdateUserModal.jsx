@@ -1,0 +1,383 @@
+import { useEffect, useState } from "react";
+import EditIcon from "../icons/edit-alt.svg";
+import { useGetUserByID } from "../hooks/useGetUserByID";
+import { useGetNamespace } from "../hooks/useGetNamespace";
+import Select from "react-select";
+import { useUpdateUserProfileFromAdmin } from "../hooks/useUpdateUserProfileFromAdmin";
+import useNotification from "../hooks/useNotification";
+import PropTypes from "prop-types";
+
+const UpdateUserModal = ({ toggleModal, userID }) => {
+  const [userFullName, setUserFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [userNamespaces, setUserNamespaces] = useState([]);
+
+  const {
+    data: userData,
+    isLoading: userIsLoading,
+    isSuccess: userIsSuccess,
+    isError: userIsError,
+    error: userError,
+  } = useGetUserByID(userID);
+
+  const {
+    data: namespacesData,
+    isLoading: namespacesIsLoading,
+    isSuccess: namespacesIsSuccess,
+    isError: namespacesIsError,
+    error: namespacesError,
+  } = useGetNamespace("admin");
+  const namespaceOption = namespacesData?.data?.namespaces.map((namespace) => ({
+    value: namespace,
+    label: namespace,
+  }));
+
+  const userRoleOption = [
+    { value: "1", label: "Admin" },
+    { value: "2", label: "Asisten" },
+    { value: "3", label: "Praktikum" },
+    { value: "4", label: "Viewer" },
+  ];
+
+  useEffect(() => {
+    if (userIsSuccess) {
+      setUserFullName(userData.data.name);
+      setUsername(userData.data.username);
+      setPassword(userData.data.password);
+      setUserEmail(userData.data.email);
+      setUserRole(userData.data.roleId);
+      setUserNamespaces(userData.data.namespaces);
+    }
+  }, [userIsSuccess, userData]);
+
+  const updateUserProfileMutation = useUpdateUserProfileFromAdmin();
+
+  const handleUpdateUser = () => {
+    let data = {};
+    if (userFullName !== userData.data.name) {
+      if (userFullName.trim() !== "") {
+        data.name = userFullName.trim();
+      } else {
+        notifyWarning("Name cannot be empty");
+        return;
+      }
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (userEmail !== userData.data.email) {
+      if (userEmail.trim() !== "") {
+        data.email = userEmail.trim();
+      } else if (!emailRegex.test(userEmail)) {
+        notifyWarning("Please enter a valid email");
+        return;
+      } else {
+        notifyWarning("Email cannot be empty");
+        return;
+      }
+    }
+
+    if (userRole !== userData.data.roleId) {
+      if (userRole !== "") {
+        data.roleId = userRole;
+      } else {
+        notifyWarning("Please select a role");
+        return;
+      }
+    }
+
+    if (userNamespaces !== userData.data.namespaces) {
+      data.namespaces = userNamespaces;
+    }
+
+    if (password !== "") {
+      data.password = password;
+    }
+
+    // check if theres any changes
+    if (Object.keys(data).length === 0) {
+      notifyWarning("No changes made");
+      return;
+    }
+
+    updateUserProfileMutation.mutate({ userID, data });
+  };
+
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+
+  useEffect(() => {
+    if (updateUserProfileMutation.isLoading) {
+      notifyLoading("Updating user...");
+    } else if (updateUserProfileMutation.isSuccess) {
+      notifySuccess("User updated successfully");
+      updateUserProfileMutation.reset();
+    } else if (updateUserProfileMutation.isError) {
+      notifyError("Something went wrong");
+      updateUserProfileMutation.reset();
+    }
+  }, [
+    notifyLoading,
+    notifySuccess,
+    notifyError,
+    notifyWarning,
+    updateUserProfileMutation,
+  ]);
+
+  //   form loading skeleton
+  const formLoadingSkeleton = (
+    <div className="animate-pulse space-y-5 overflow-y-auto p-7">
+      {/* name */}
+      <div className="flex flex-col">
+        <label htmlFor="user_full_name" className="font-semibold">
+          Name
+        </label>
+        <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {/* username */}
+        <div className="flex flex-col">
+          <label htmlFor="username" className="font-semibold">
+            Username
+          </label>
+          <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+        </div>
+        {/* password */}
+        <div className="flex flex-col">
+          <label htmlFor="password" className="font-semibold">
+            Password
+          </label>
+          <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+        </div>
+      </div>
+      {/* email */}
+      <div className="flex flex-col">
+        <label htmlFor="email" className="font-semibold">
+          Email
+        </label>
+        <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+      </div>
+      {/* role */}
+      <div className="flex flex-col">
+        <label htmlFor="user_role" className="font-semibold">
+          Role
+        </label>
+        <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+      </div>
+      {/* deployment access / namespace */}
+      <div className="flex flex-col">
+        <label htmlFor="deployment_access" className="font-semibold">
+          Deployment Access
+        </label>
+        <div className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700 bg-gray-300 h-10"></div>
+      </div>
+    </div>
+  );
+
+  return (
+    <section className="fixed inset-0 -top-5 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5">
+      <div className="max-h-full w-[564px] bg-white rounded-xl relative flex flex-col">
+        {/* title and close button */}
+        <div className="flex justify-between items-center px-7 pt-7 pb-3">
+          <div className="flex space-x-2 items-center">
+            <img src={EditIcon} alt="" className="h-9 w-9" />
+            <h1 className="font-semibold text-lg">Update User</h1>
+          </div>
+          <button title="Close" type="button" onClick={toggleModal}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 text-sky-700"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        {(userIsLoading || namespacesIsLoading) && formLoadingSkeleton}
+        {/* input */}
+        {userIsSuccess && namespacesIsSuccess && (
+          <div className="space-y-5 overflow-y-auto p-7">
+            {/* name */}
+            <div className="flex flex-col">
+              <label htmlFor="user_full_name" className="font-semibold">
+                Name
+              </label>
+              <input
+                type="text"
+                value={userFullName}
+                onChange={(e) => setUserFullName(e.target.value)}
+                autoCapitalize="on"
+                id="user_full_name"
+                placeholder="Fullname"
+                className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={updateUserProfileMutation.isLoading}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {/* username */}
+              <div className="flex flex-col">
+                <label htmlFor="username" className="font-semibold">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.trim())}
+                  autoComplete="off"
+                  id="username"
+                  placeholder="Username"
+                  className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                  disabled={updateUserProfileMutation.isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+              {/* password */}
+              <div className="flex flex-col">
+                <label htmlFor="password" className="font-semibold">
+                  Set Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value.trim())}
+                  id="password"
+                  placeholder="Password"
+                  disabled={updateUserProfileMutation.isLoading}
+                  className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                  onKeyDown={(e) => {
+                    if (e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            {/* email */}
+            <div className="flex flex-col">
+              <label htmlFor="email" className="font-semibold">
+                Email
+              </label>
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                autoComplete="off"
+                id="email"
+                placeholder="example@email.com"
+                className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                //   disabled={updateUserProfileMutation.isLoading}
+                onKeyDown={(e) => {
+                  if (e.key === " ") {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </div>
+            {/* role */}
+            <div className="flex flex-col">
+              <label htmlFor="user_role" className="font-semibold">
+                Role
+              </label>
+              <Select
+                options={userRoleOption}
+                isDisabled={updateUserProfileMutation.isLoading}
+                inputId="user_role"
+                value={
+                  userRole
+                    ? userRoleOption.find((option) => option.value == userRole)
+                    : null
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "0.5rem",
+                    borderColor: "#d1d5db",
+                    borderWidth: "2px",
+                    padding: "2px",
+                  }),
+                }}
+                onChange={(e) => setUserRole(e ? e.value : null)}
+              />
+            </div>
+            {/* deployment access / namespace */}
+            <div className="flex flex-col">
+              <label htmlFor="deployment_access" className="font-semibold">
+                Deployment Access
+              </label>
+              <Select
+                options={namespaceOption}
+                isMulti={true}
+                isDisabled={updateUserProfileMutation.isLoading}
+                inputId="deployment_access"
+                value={
+                  userNamespaces
+                    ? userNamespaces.map((value) =>
+                        namespaceOption.find((option) => option.value === value)
+                      )
+                    : []
+                }
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "0.5rem",
+                    borderColor: "#d1d5db",
+                    borderWidth: "2px",
+                    padding: "2px",
+                  }),
+                }}
+                onChange={(selectedOptions) => {
+                  const selectedValues = selectedOptions
+                    ? selectedOptions.map((option) => option.value)
+                    : [];
+                  setUserNamespaces(selectedValues);
+                }}
+              />
+            </div>
+            {/* save button */}
+            <div className="flex justify-end">
+              <button
+                title="Save Deployment"
+                type="button"
+                onClick={handleUpdateUser}
+                className="bg-sky-700 px-3 py-2 rounded-md text-white hover:bg-sky-950 transition-colors duration-300"
+                disabled={updateUserProfileMutation.isLoading}
+              >
+                {updateUserProfileMutation.isLoading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        )}
+        {userIsError && (
+          <p className="text-center mb-5 text-red-600">
+            {userError?.response?.data?.message || "Something went wrong"}
+          </p>
+        )}
+        {namespacesIsError && (
+          <p className="text-center mb-5 text-red-600">
+            {namespacesError?.response?.data?.message || "Something went wrong"}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+};
+
+UpdateUserModal.propTypes = {
+  toggleModal: PropTypes.func.isRequired,
+  userID: PropTypes.string.isRequired,
+};
+
+export default UpdateUserModal;
