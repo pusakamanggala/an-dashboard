@@ -5,9 +5,16 @@ import { useGetNamespace } from "../hooks/useGetNamespace";
 import Select from "react-select";
 import { useUpdateUserProfileFromAdmin } from "../hooks/useUpdateUserProfileFromAdmin";
 import useNotification from "../hooks/useNotification";
+import AddNamespaceModal from "./AddNamespaceModal";
 import PropTypes from "prop-types";
 
 const UpdateUserModal = ({ toggleModal, userID }) => {
+  const [isAddNamespaceModalOpen, setIsAddNamespaceModalOpen] = useState(false);
+
+  const handleAddNamespaceModal = () => {
+    setIsAddNamespaceModalOpen(!isAddNamespaceModalOpen);
+  };
+
   const [userFullName, setUserFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -177,8 +184,16 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
   );
 
   return (
-    <section className="fixed inset-0 -top-5 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5">
-      <div className="max-h-full w-[564px] bg-white rounded-xl relative flex flex-col">
+    <section
+      className={`" fixed inset-0 -top-5 flex items-center justify-center z-50 h-full w-full ${
+        !isAddNamespaceModalOpen && "bg-black/60 backdrop-blur-[1px]"
+      } p-5 "`}
+    >
+      <div
+        className={`${
+          isAddNamespaceModalOpen && "opacity-0"
+        } " max-h-full w-[564px] bg-white rounded-xl relative flex flex-col "`}
+      >
         {/* title and close button */}
         <div className="flex justify-between items-center px-7 pt-7 pb-3">
           <div className="flex space-x-2 items-center">
@@ -314,9 +329,34 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
             </div>
             {/* deployment access / namespace */}
             <div className="flex flex-col">
-              <label htmlFor="deployment_access" className="font-semibold">
-                Deployment Access
-              </label>
+              <div className="flex justify-between mb-2 items-center">
+                <label htmlFor="deployment_access" className="font-semibold">
+                  Deployment Access{" "}
+                  <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <button
+                  className="border-2 flex gap-2 items-center px-2 py-1 rounded-lg font-semibold bg-sky-600 text-white hover:bg-sky-800 transition-colors duration-300"
+                  type="button"
+                  title="Create New Namespace"
+                  onClick={handleAddNamespaceModal}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
+                  </svg>
+                  <span className="hidden md:block">Create Namespace</span>
+                </button>
+              </div>
               <Select
                 options={namespaceOption}
                 isMulti={true}
@@ -371,6 +411,9 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
           </p>
         )}
       </div>
+      {isAddNamespaceModalOpen && (
+        <AddNamespaceModal toggleModal={handleAddNamespaceModal} />
+      )}
     </section>
   );
 };
