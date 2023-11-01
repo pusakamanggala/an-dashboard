@@ -2,64 +2,24 @@ import { useState } from "react";
 import AddonsTable from "../components/AddonsTable";
 import usePageTitle from "../hooks/usePageTitle";
 import AddAddonsModal from "../components/AddAddonsModal";
+import { useGetAddons } from "../hooks/useGetAddons";
+import TableSkeleton from "../components/TableSkeleton";
 
 const AddonsService = () => {
   const pageTitle = usePageTitle();
   const [isAddAddonsModalShow, setIsAddAddonsModalShow] = useState(false);
 
-  //   addons dummy data
-  const addonsData = [
-    {
-      id: 1,
-      addons_name: "Manual Book",
-      images: "john doe",
-      namespace: "budi",
-      project_owner: "Git123",
-      deploy_at: "2021-08-01 12:00:00",
-      restart: "4",
-      status: "complete",
-    },
-    {
-      id: 5,
-      addons_name: "Manual Book",
-      images: "john doe",
-      namespace: "budi",
-      project_owner: "Git123",
-      deploy_at: "2021-08-01 12:00:00",
-      restart: "4",
-      status: "complete",
-    },
-    {
-      id: 2,
-      addons_name: "User Manual",
-      images: "jane smith",
-      namespace: "alice",
-      project_owner: "Git456",
-      deploy_at: "2021-08-02 14:30:00",
-      restart: "2",
-      status: "pending",
-    },
-    {
-      id: 3,
-      addons_name: "My Awesome App",
-      images: "bob ross",
-      namespace: "charlie",
-      project_owner: "Git789",
-      deploy_at: "2021-08-03 10:15:00",
-      restart: "1",
-      status: "failed",
-    },
-    {
-      id: 4,
-      addons_name: "Cool Project",
-      images: "susan brown",
-      namespace: "david",
-      project_owner: "Git101",
-      deploy_at: "2021-08-04 16:45:00",
-      restart: "3",
-      status: "on-delivery",
-    },
-  ];
+  const handleAddAddonsModal = () => {
+    setIsAddAddonsModalShow(!isAddAddonsModalShow);
+  };
+
+  const {
+    data: addonsData,
+    isLoading: addonsIsLoading,
+    isSuccess: addonsIsSuccess,
+    isError: addonsIsError,
+    error: addonsError,
+  } = useGetAddons();
 
   return (
     <>
@@ -89,12 +49,22 @@ const AddonsService = () => {
             <span>Add Addons</span>
           </button>
         </div>
-        <AddonsTable addonsData={addonsData} />
+        {addonsIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
+        {addonsIsSuccess && addonsData.data.length > 0 && (
+          <AddonsTable addonsData={addonsData.data} />
+        )}
+        {addonsIsSuccess && addonsData.data.length === 0 && (
+          <p>No addons has been deployed</p>
+        )}
+        {addonsIsError && (
+          <p className="text-sky-700 font-semibold">
+            {addonsError.response.data.message}
+          </p>
+        )}
       </section>
-      <AddAddonsModal
-        isOpen={isAddAddonsModalShow}
-        setIsOpen={setIsAddAddonsModalShow}
-      />
+      {isAddAddonsModalShow && (
+        <AddAddonsModal toggleModal={handleAddAddonsModal} />
+      )}
     </>
   );
 };
