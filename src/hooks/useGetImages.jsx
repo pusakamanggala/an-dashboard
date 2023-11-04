@@ -19,5 +19,7 @@ async function fetchImages() {
 export function useGetImages() {
   return useQuery(["images"], () => fetchImages(), {
     enabled: !!getToken(),
+    cacheTime: 3000,
+    staleTime: 5000,
   });
 }

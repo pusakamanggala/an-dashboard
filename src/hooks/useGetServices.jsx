@@ -19,5 +19,7 @@ async function fetchServices() {
 export function useGetServices() {
   return useQuery(["services"], () => fetchServices(), {
     enabled: !!getToken(),
+    cacheTime: 3000,
+    staleTime: 5000,
   });
 }

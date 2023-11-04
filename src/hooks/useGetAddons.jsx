@@ -19,5 +19,7 @@ async function fetchAddons() {
 export function useGetAddons() {
   return useQuery(["addons"], () => fetchAddons(), {
     enabled: !!getToken(),
+    cacheTime: 3000,
+    staleTime: 4000,
   });
 }

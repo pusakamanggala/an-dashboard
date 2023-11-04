@@ -19,5 +19,7 @@ async function fetchDeployments() {
 export function useGetDeployments() {
   return useQuery(["deployments"], () => fetchDeployments(), {
     enabled: !!getToken(),
+    cacheTime: 1000,
+    staleTime: 2000,
   });
 }

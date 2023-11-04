@@ -19,5 +19,7 @@ async function fetchMembers() {
 export function useGetMembers(role) {
   return useQuery(["members"], () => fetchMembers(), {
     enabled: role === "admin" && !!getToken(),
+    cacheTime: 2000,
+    staleTime: 4000,
   });
 }

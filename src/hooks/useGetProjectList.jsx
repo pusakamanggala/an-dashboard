@@ -19,5 +19,7 @@ async function fetchProjectList() {
 export function useGetProjectList() {
   return useQuery(["projectList"], () => fetchProjectList(), {
     enabled: !!getToken(),
+    cacheTime: 3000,
+    staleTime: 5000,
   });
 }
