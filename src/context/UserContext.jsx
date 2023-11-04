@@ -1,50 +1,59 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import jwtDecode from "jwt-decode";
 import PropTypes from "prop-types";
+import { getToken } from "../utils/helper";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [userRole, setUserRole] = useState("viewer");
+  const token = getToken();
+  const user = useMemo(() => {
+    return token ? jwtDecode(token) : null;
+  }, [token]);
 
-  const getToken = () => {
+  // get user role from cookie
+  const getUserRoleToken = () => {
     const cookie = document.cookie
       .split("; ")
-      .find((row) => row.startsWith("auth-token="));
+      .find((row) => row.startsWith("userRole="));
 
     return cookie ? cookie.split("=")[1] : null;
   };
 
+  // set user role directly from cookie
+  const [userRole, setUserRole] = useState(
+    getUserRoleToken() ? getUserRoleToken() : null
+  );
+
+  // set user role from token if user role is not set yet and token is available
   useEffect(() => {
-    const token = getToken();
-
-    if (token) {
+    if (token && !userRole) {
       const decodedUser = jwtDecode(token);
-      setUser(decodedUser);
-
       const roleId = decodedUser.roleId;
+      let role = null;
       switch (roleId) {
         case 1:
-          setUserRole("admin");
+          role = "admin";
           break;
         case 2:
-          setUserRole("asisten");
+          role = "asisten";
           break;
         case 3:
-          setUserRole("praktikum");
+          role = "praktikum";
           break;
         case 4:
-          setUserRole("viewer");
-          break;
-        default:
-          setUserRole(null);
+          role = "viewer";
           break;
       }
+      setUserRole(role);
+      // set expire according to remember me check box
+      document.cookie = `userRole=${role}; path=/;`;
     }
-  }, []);
+  }, [userRole, token]);
 
   const contextValue = { user, userRole };
+
+  console.log(user, userRole);
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
