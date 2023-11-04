@@ -73,16 +73,16 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
       }
     }
 
-    const emailRegex = /\S+@\S+\.\S+/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (userEmail !== userData.data.email) {
-      if (userEmail.trim() !== "") {
-        data.email = userEmail.trim();
+      if (userEmail.trim() === "") {
+        notifyWarning("Email cannot be empty");
+        return;
       } else if (!emailRegex.test(userEmail)) {
         notifyWarning("Please enter a valid email");
         return;
       } else {
-        notifyWarning("Email cannot be empty");
-        return;
+        data.email = userEmail.trim();
       }
     }
 
@@ -99,7 +99,7 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
       data.namespaces = userNamespaces;
     }
 
-    if (password !== "") {
+    if (password) {
       data.password = password;
     }
 
@@ -108,29 +108,11 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
       return;
     }
 
+    console.log(data);
     updateUserProfileMutation.mutate({ userID, data });
   };
 
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
-
-  useEffect(() => {
-    if (updateUserProfileMutation.isLoading) {
-      notifyLoading("Updating user...");
-    } else if (updateUserProfileMutation.isSuccess) {
-      notifySuccess("User updated successfully");
-      updateUserProfileMutation.reset();
-    } else if (updateUserProfileMutation.isError) {
-      notifyError("Something went wrong");
-      updateUserProfileMutation.reset();
-    }
-  }, [
-    notifyLoading,
-    notifySuccess,
-    notifyError,
-    notifyWarning,
-    updateUserProfileMutation,
-  ]);
+  const { notifyWarning } = useNotification();
 
   //   form loading skeleton
   const formLoadingSkeleton = (
@@ -199,7 +181,12 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
             <img src={EditIcon} alt="" className="h-9 w-9" />
             <h1 className="font-semibold text-lg">Update User</h1>
           </div>
-          <button title="Close" type="button" onClick={toggleModal}>
+          <button
+            title="Close"
+            type="button"
+            onClick={toggleModal}
+            disabled={updateUserProfileMutation.isLoading}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -279,19 +266,14 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
+                onChange={(e) => setUserEmail(e.target.value.trim())}
                 autoComplete="off"
                 id="email"
                 placeholder="example@email.com"
+                disabled={updateUserProfileMutation.isLoading}
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-                //   disabled={updateUserProfileMutation.isLoading}
-                onKeyDown={(e) => {
-                  if (e.key === " ") {
-                    e.preventDefault();
-                  }
-                }}
               />
             </div>
             {/* role */}
@@ -332,6 +314,7 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
                   type="button"
                   title="Create New Namespace"
                   onClick={handleAddNamespaceModal}
+                  disabled={updateUserProfileMutation.isLoading}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -388,7 +371,7 @@ const UpdateUserModal = ({ toggleModal, userID }) => {
                 className="bg-sky-700 px-3 py-2 rounded-md text-white hover:bg-sky-950 transition-colors duration-300"
                 disabled={updateUserProfileMutation.isLoading}
               >
-                {updateUserProfileMutation.isLoading ? "Saving..." : "Save"}
+                {updateUserProfileMutation.isLoading ? "Updating..." : "Update"}
               </button>
             </div>
           </div>

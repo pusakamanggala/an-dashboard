@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import userProfileIcon from "../icons/user-profile.svg";
 import { formatTimestamp, getRoleByRoleID } from "../utils/helper";
 import useNotification from "../hooks/useNotification";
 import { useUpdateUserProfile } from "../hooks/useUpdateUserProfile";
 import PropTypes from "prop-types";
 
-const UpdateUserProfileModal = ({ toggleModal, userData, refetchUserData }) => {
+const UpdateUserProfileModal = ({ toggleModal, userData }) => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePictureURL, setProfilePictureURL] = useState(
     userData.data.imageUrl
@@ -17,8 +17,7 @@ const UpdateUserProfileModal = ({ toggleModal, userData, refetchUserData }) => {
 
   const updateUSerProfileMutation = useUpdateUserProfile();
 
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
+  const { notifyError, notifyWarning } = useNotification();
 
   const uploadProfilePicture = (event) => {
     setProfilePicture(event.target.files[0]);
@@ -79,29 +78,6 @@ const UpdateUserProfileModal = ({ toggleModal, userData, refetchUserData }) => {
       data: data,
     });
   };
-
-  useEffect(() => {
-    if (updateUSerProfileMutation.isLoading) {
-      notifyLoading("Updating profile...");
-    } else if (updateUSerProfileMutation.isSuccess) {
-      notifySuccess("Profile updated successfully");
-      //   refetch user data to update the header
-      refetchUserData();
-      updateUSerProfileMutation.reset();
-    } else if (updateUSerProfileMutation.isError) {
-      notifyError(
-        updateUSerProfileMutation.error?.response?.data?.message ||
-          "Something went wrong"
-      );
-      updateUSerProfileMutation.reset();
-    }
-  }, [
-    updateUSerProfileMutation,
-    notifyLoading,
-    notifySuccess,
-    notifyError,
-    refetchUserData,
-  ]);
 
   return (
     <section className="fixed inset-0 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5">

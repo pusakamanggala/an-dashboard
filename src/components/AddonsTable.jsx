@@ -8,7 +8,6 @@ import AddonsDetailModal from "./AddonsDetailModal";
 import { formatTimestamp, getBadgeColor, paginate } from "../utils/helper";
 import { useSearchParams } from "react-router-dom";
 import { useDeleteAddons } from "../hooks/useDeleteAddons";
-import useNotification from "../hooks/useNotification";
 
 const AddonsTable = ({ addonsData }) => {
   const [detailModalIsOpen, setDetailModalIsOpen] = useState(false);
@@ -71,23 +70,9 @@ const AddonsTable = ({ addonsData }) => {
     };
   }, [optionsMenuRef]);
 
-  // notification
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
-  useEffect(() => {
-    if (deleteAddonsMutation.isLoading) {
-      notifyLoading("Deleting addons...");
-    } else if (deleteAddonsMutation.isSuccess) {
-      notifySuccess("Deletion process is in progress. Please wait a moment.");
-      deleteAddonsMutation.reset();
-    } else if (deleteAddonsMutation.isError) {
-      notifyError("Failed to delete addons");
-      deleteAddonsMutation.reset();
-    }
-  }, [deleteAddonsMutation, notifyLoading, notifySuccess, notifyError]);
-
   return (
     <>
-      <section className="px-5 border-2 rounded-2xl w-full overflow-x-auto">
+      <section className="px-5 border-2 rounded-2xl w-full overflow-x-auto min-h-[400px]">
         <table className="border-separate border-spacing-y-5 text-sm w-full font-medium h-auto">
           <thead>
             <tr className="h-10 align-top text-gray-500 divide-y-reverse divide-y-2">

@@ -28,7 +28,7 @@ const DeploymentTimestamp = ({ timestamp }) => {
         <table className="border-separate border-spacing-y-5 text-sm w-full font-medium">
           <thead>
             <tr className="h-10 align-top text-gray-500 divide-y-reverse divide-y-2">
-              <th className="text-start pr-6 font-semibold border-b-2 whitespace-nowrap">
+              <th className="text-start pr-6 font-semibold border-b-2 whitespace-nowrap w-20">
                 Last Timestamp
               </th>
               <th className="font-semibold text-start px-6 w-60">Pod Name</th>

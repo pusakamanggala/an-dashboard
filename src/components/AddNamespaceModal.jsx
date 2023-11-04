@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PaperPlusIcon from "../icons/paper-plus.svg";
 import { useAddNamespace } from "../hooks/useAddNamespace";
 import useNotification from "../hooks/useNotification";
@@ -8,8 +8,7 @@ const AddNamespaceModal = ({ toggleModal }) => {
   const [namespace, setNamespace] = useState("");
   const addNamespaceMutation = useAddNamespace();
 
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
+  const { notifyWarning } = useNotification();
 
   const handleNamespaceOnChange = (e) => {
     const inputValue = e.target.value;
@@ -22,7 +21,6 @@ const AddNamespaceModal = ({ toggleModal }) => {
       notifyWarning("Namespace must be at least 6 characters");
       return;
     }
-
     addNamespaceMutation.mutate({
       data: {
         namespace,
@@ -30,28 +28,9 @@ const AddNamespaceModal = ({ toggleModal }) => {
     });
   };
 
-  useEffect(() => {
-    if (addNamespaceMutation.isLoading) {
-      notifyLoading("Adding namespace...");
-    } else if (addNamespaceMutation.isSuccess) {
-      notifySuccess("Namespace added successfully");
-      toggleModal();
-      addNamespaceMutation.reset();
-    } else if (addNamespaceMutation.isError) {
-      notifyError(
-        addNamespaceMutation?.error?.response?.data?.message ||
-          "Something went wrong"
-      );
-      addNamespaceMutation.reset();
-    }
-  }, [
-    addNamespaceMutation,
-    notifyError,
-    notifyLoading,
-    notifySuccess,
-    notifyWarning,
-    toggleModal,
-  ]);
+  if (addNamespaceMutation.isSuccess) {
+    toggleModal();
+  }
 
   return (
     <section className="fixed inset-0 flex items-center justify-center z-50 h-full w-full bg-black/60 backdrop-blur-[1px] p-5 ">
@@ -98,6 +77,7 @@ const AddNamespaceModal = ({ toggleModal }) => {
               className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
               value={namespace}
               onChange={handleNamespaceOnChange}
+              disabled={addNamespaceMutation.isLoading}
             />
           </div>
           {/* save button */}

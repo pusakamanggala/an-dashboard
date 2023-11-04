@@ -24,13 +24,11 @@ const AddProjectConfigModal = ({ toggleModal }) => {
 
   const addProjectMutation = useAddProject();
 
-  const {
-    data: namespaceData,
-    isError: namespaceIsError,
-    isSuccess: namespaceIsSuccess,
-  } = useGetNamespace(userRole);
+  const { data: namespaceData, isSuccess: namespaceIsSuccess } =
+    useGetNamespace(userRole);
 
-  const { data: memberData } = useGetMembers(userRole);
+  const { data: memberData, isSuccess: memberIsSuccess } =
+    useGetMembers(userRole);
 
   // regular user can only use their own namespace
   const namespaceOptions =
@@ -49,15 +47,17 @@ const AddProjectConfigModal = ({ toggleModal }) => {
     label: member.username,
   }));
 
+  const handleInputProjectName = () => {
+    // no whitespace not symbol except - and all lowercase
+    projectNameRef.current.value = projectNameRef.current.value
+      .replace(/[^a-z0-9-]/g, "")
+      .toLowerCase();
+  };
+
   // notification
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
+  const { notifyWarning } = useNotification();
   useEffect(() => {
-    if (addProjectMutation.isLoading) {
-      notifyLoading("Adding project config...");
-    } else if (addProjectMutation.isSuccess) {
-      notifySuccess("Project config added successfully");
-      addProjectMutation.reset();
+    if (addProjectMutation.isSuccess) {
       // reset value
       projectNameRef.current.value = "";
       repositoryNameRef.current.value = "";
@@ -67,14 +67,9 @@ const AddProjectConfigModal = ({ toggleModal }) => {
       gitlabUsernameDeployTokenRef.current.value = "";
       gitlabPasswordDeployTokenRef.current.value = "";
       setSelectedNamespace(null);
-    } else if (addProjectMutation.isError) {
-      notifyError(
-        addProjectMutation.error?.response?.data?.message ||
-          "Something went wrong"
-      );
       addProjectMutation.reset();
     }
-  }, [addProjectMutation, notifyLoading, notifySuccess, notifyError]);
+  }, [addProjectMutation]);
 
   const handleAddProjectConfig = () => {
     // validation
@@ -121,7 +116,11 @@ const AddProjectConfigModal = ({ toggleModal }) => {
             <img src={PaperPlusIcon} alt="" className="h-9 w-9" />
             <h1 className="font-semibold text-lg">Add Project Config</h1>
           </div>
-          <button title="Close" onClick={handleCloseModal}>
+          <button
+            title="Close"
+            onClick={handleCloseModal}
+            disabled={addProjectMutation.isLoading}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -150,13 +149,10 @@ const AddProjectConfigModal = ({ toggleModal }) => {
               ref={projectNameRef}
               id="project_name"
               placeholder="Project Name"
+              disabled={addProjectMutation.isLoading}
               className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-              // prevent user from typing space
-              onKeyDown={(e) => {
-                if (e.key === " ") {
-                  e.preventDefault();
-                }
-              }}
+              // prevent user from typing space with trim
+              onChange={handleInputProjectName}
             />
           </div>
           {/* namespace */}
@@ -164,9 +160,6 @@ const AddProjectConfigModal = ({ toggleModal }) => {
             <label htmlFor="namespace" className="font-semibold">
               Namespace
             </label>
-            {namespaceIsError && (
-              <p className="text-red-600">Failed to fetch namespaces !</p>
-            )}
             <Select
               options={namespaceOptions}
               value={
@@ -186,6 +179,10 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 }),
               }}
               onChange={(e) => setSelectedNamespace(e ? e.value : null)}
+              isDisabled={
+                addProjectMutation.isLoading ||
+                (!namespaceIsSuccess && userRole === "admin")
+              }
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-3 gap-y-5">
@@ -198,6 +195,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 type="text"
                 ref={repositoryNameRef}
                 id="repository_name"
+                disabled={addProjectMutation.isLoading}
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
                 // prevent user from typing space
@@ -233,6 +231,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                     }),
                   }}
                   onChange={(e) => setProjectOwner(e ? e.value : null)}
+                  isDisabled={addProjectMutation.isLoading || !memberIsSuccess}
                 />
               ) : (
                 <input
@@ -257,6 +256,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 id="gitlab_project_id"
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={addProjectMutation.isLoading}
               />
             </div>
             {/* gitlab access token */}
@@ -270,6 +270,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 id="gitlab_access_token"
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={addProjectMutation.isLoading}
               />
             </div>
             {/* gitlab username deploy token */}
@@ -286,6 +287,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 id="gitlab_username_deploy_token"
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={addProjectMutation.isLoading}
               />
             </div>
             {/* gitlab password deploy token */}
@@ -302,6 +304,7 @@ const AddProjectConfigModal = ({ toggleModal }) => {
                 id="gitlab_password_deploy_token"
                 placeholder="Project Name"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
+                disabled={addProjectMutation.isLoading}
               />
             </div>
           </div>

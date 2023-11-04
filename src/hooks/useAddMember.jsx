@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { getToken } from "../utils/helper";
+import useNotification from "./useNotification";
 
 export function useAddMember() {
   const queryClient = useQueryClient();
+  const { notifyLoading, notifySuccess, notifyError } = useNotification();
 
   return useMutation(
     async ({ data }) => {
@@ -24,8 +26,15 @@ export function useAddMember() {
     },
     {
       onSuccess: () => {
-        // to refetch projectList after mutation is success
-        queryClient.invalidateQueries("members");
+        queryClient.invalidateQueries("members"); // to refetch members after mutation is success
+        notifySuccess("Member successfully added");
+      },
+      onError: (error) => {
+        // show error from response if available
+        notifyError(error?.response?.data?.message || "Something went wrong");
+      },
+      onMutate: () => {
+        notifyLoading("Adding member...");
       },
     }
   );

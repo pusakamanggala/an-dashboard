@@ -6,7 +6,6 @@ import ProjectConfigDetailModal from "./ProjectConfigDetailModal";
 import { paginate } from "../utils/helper";
 import { useSearchParams } from "react-router-dom";
 import { useDeleteProject } from "../hooks/useDeleteProject";
-import useNotification from "../hooks/useNotification";
 
 const ProjectConfigTable = ({ projectConfigData }) => {
   // sort data by createdAt
@@ -40,20 +39,6 @@ const ProjectConfigTable = ({ projectConfigData }) => {
       deleteProjectMutation.mutate(projectID);
     setOpenMenuIndex(null);
   };
-
-  // notification
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
-  useEffect(() => {
-    if (deleteProjectMutation.isLoading) {
-      notifyLoading("Deleting project...");
-    } else if (deleteProjectMutation.isSuccess) {
-      notifySuccess("Project has been deleted");
-      deleteProjectMutation.reset();
-    } else if (deleteProjectMutation.isError) {
-      notifyError("Failed to delete project");
-      deleteProjectMutation.reset();
-    }
-  }, [deleteProjectMutation, notifyLoading, notifySuccess, notifyError]);
 
   const toggleProjectConfigDetailModal = (projectID) => {
     setDetailModalIsOpen(!detailModalIsOpen);

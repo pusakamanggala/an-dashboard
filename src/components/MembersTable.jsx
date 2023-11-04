@@ -5,7 +5,6 @@ import PropTypes from "prop-types";
 import { getRoleByRoleID, formatTimestamp, paginate } from "../utils/helper";
 import { useSearchParams } from "react-router-dom";
 import { useDeleteMember } from "../hooks/useDeleteMember";
-import useNotification from "../hooks/useNotification";
 import UpdateUserModal from "./UpdateUserModal";
 
 const MembersTable = ({ membersdata }) => {
@@ -21,7 +20,7 @@ const MembersTable = ({ membersdata }) => {
   const [paginationParam, setPaginationParam] = useSearchParams({
     page: "1",
   });
-  const currentPage = parseInt(paginationParam.get("page"));
+  const currentPage = parseInt(paginationParam.get("page")) || 1;
   const paginatedMembers = paginate(membersdata, itemsPerPage, currentPage);
 
   // an array of boolean values to track the menu state for each row
@@ -61,20 +60,6 @@ const MembersTable = ({ membersdata }) => {
       deleteMemberMutation.mutate(userId);
     setOpenMenuIndex(null);
   };
-
-  // Notification
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
-  useEffect(() => {
-    if (deleteMemberMutation.isLoading) {
-      notifyLoading("Deleting user...");
-    } else if (deleteMemberMutation.isSuccess) {
-      notifySuccess("User has been deleted");
-      deleteMemberMutation.reset();
-    } else if (deleteMemberMutation.isError) {
-      notifyError("Failed to delete user!");
-      deleteMemberMutation.reset();
-    }
-  }, [deleteMemberMutation, notifyLoading, notifySuccess, notifyError]);
 
   return (
     <>

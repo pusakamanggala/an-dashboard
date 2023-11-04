@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { getToken } from "../utils/helper";
+import useNotification from "./useNotification";
 
 export function useDeleteAddons() {
   const queryClient = useQueryClient();
+  const { notifyLoading, notifySuccess, notifyError } = useNotification();
 
   return useMutation(
     async ({ namespace, addonsName, projectOwner }) => {
@@ -23,8 +25,17 @@ export function useDeleteAddons() {
     },
     {
       onSuccess: () => {
-        // to refetch addons after mutation is successful
-        queryClient.invalidateQueries("addons");
+        queryClient.invalidateQueries("addons"); // to refetch addons after mutation is successful
+        notifySuccess("Deletion process is in progress. Please wait a moment.");
+      },
+      onError: (error) => {
+        notifyError(
+          error?.response?.data?.message ||
+            "Something went wrong while deleting addon"
+        );
+      },
+      onMutate: () => {
+        notifyLoading("Deleting addon...");
       },
     }
   );

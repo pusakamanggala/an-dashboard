@@ -25,6 +25,7 @@ const AddAddonsModal = ({ toggleModal }) => {
   const [envVariables, setEnvVariables] = useState([{ key: "", value: "" }]);
 
   const addAddonsMutation = useAddAddons();
+  const { notifyWarning } = useNotification();
 
   // this options is for admin only
   const { data: membersData } = useGetMembers(userRole);
@@ -84,39 +85,10 @@ const AddAddonsModal = ({ toggleModal }) => {
 
   const handleInputAddonsServiceNameChange = () => {
     // no whitespace not symbol except - and all lowercase
-    let inputValue = addonsServiceNameRef.current.value;
-    inputValue = inputValue.replace(/\s/g, "");
-    inputValue = inputValue.replace(/[^a-zA-Z0-9-]/g, "");
-    inputValue = inputValue.toLowerCase();
-    addonsServiceNameRef.current.value = inputValue;
+    addonsServiceNameRef.current.value = addonsServiceNameRef.current.value
+      .replace(/[^a-z0-9-]/g, "")
+      .toLowerCase();
   };
-  // notification
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
-
-  useEffect(() => {
-    if (addAddonsMutation.isLoading) {
-      notifyLoading("Adding Addons...");
-    } else if (addAddonsMutation.isSuccess) {
-      notifySuccess(addAddonsMutation.data.message);
-      // reset form
-      if (userRole === "admin") setProjectOwner(null);
-      addonsServiceNameRef.current.value = "";
-      imagesRef.current.value = "";
-      volumeMountPathRef.current.value = "";
-      targetPortRef.current.value = "";
-      setNamespace(null);
-      setEnvVariables([{ key: "", value: "" }]);
-
-      addAddonsMutation.reset();
-    } else if (addAddonsMutation.isError) {
-      notifyError(
-        addAddonsMutation.error?.response?.data?.message ||
-          "Something went wrong"
-      );
-      addAddonsMutation.reset();
-    }
-  }, [addAddonsMutation, notifyError, notifyLoading, notifySuccess, userRole]);
 
   const handleSubmitAddons = () => {
     // Validation
@@ -169,6 +141,20 @@ const AddAddonsModal = ({ toggleModal }) => {
 
     addAddonsMutation.mutate({ data });
   };
+
+  // Reset the form after mutation is success
+  useEffect(() => {
+    if (addAddonsMutation.isSuccess) {
+      if (userRole === "admin") setProjectOwner(null);
+      addonsServiceNameRef.current.value = "";
+      imagesRef.current.value = "";
+      volumeMountPathRef.current.value = "";
+      targetPortRef.current.value = "";
+      setNamespace(null);
+      setEnvVariables([{ key: "", value: "" }]);
+      addAddonsMutation.reset();
+    }
+  }, [addAddonsMutation, userRole]);
 
   // Function to add a new environment variable input
   const handleAddEnvVariableInput = () => {

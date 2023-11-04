@@ -1,7 +1,7 @@
 import LoginSideBackground from "../img/sec-graphic.svg";
 import HomeIcon from "../icons/home.svg";
 import ANLogo from "../img/an-logo.svg";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import useNotification from "../hooks/useNotification";
 
@@ -11,8 +11,7 @@ const LoginPage = () => {
   const [rememberUser, setRememberUser] = useState(false);
 
   const loginMutation = useLogin(rememberUser);
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
+  const { notifyWarning } = useNotification();
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -30,34 +29,6 @@ const LoginPage = () => {
     loginMutation.mutate(data);
   };
 
-  useEffect(() => {
-    if (loginMutation.isLoading) {
-      notifyLoading("Logging in...");
-    } else if (loginMutation.isSuccess) {
-      notifySuccess("Login successful");
-      loginMutation.reset();
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-    } else if (loginMutation.isError) {
-      notifyError("Login failed");
-      loginMutation.reset();
-    }
-  }, [loginMutation, notifyLoading, notifySuccess, notifyError]);
-
-  const loginStatusBadge = () => {
-    if (loginMutation.isError) {
-      return (
-        <div className="bg-red-600 w-full h-10 text-white px-3 py-1 rounded-lg flex items-center">
-          {loginMutation.error?.response?.data?.message ||
-            "Something went wrong"}
-        </div>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <main className="h-[100dvh] flex">
       <section className="md:w-2/3 w-full flex justify-center items-center">
@@ -69,58 +40,69 @@ const LoginPage = () => {
               alt="Adaptive Network Laboratory Logo"
               className="md:h-36 md:w-36 w-28 h-28"
             />
-            <h1 className="font-medium md:text-2xl text-xl text-center text-sky-700">
-              Log in to your account
-            </h1>
+            {!loginMutation.isSuccess && (
+              <h1 className="font-medium md:text-2xl text-xl text-center text-sky-700">
+                Log in to your account
+              </h1>
+            )}
           </div>
-          {loginStatusBadge()}
-          <form
-            className="flex flex-col md:w-96 w-72 mt-5"
-            onSubmit={loginMutation.isLoading ? null : handleLogin}
-          >
-            <label htmlFor="username" className="mb-1">
-              Username
-            </label>
-            <input
-              ref={usernameRef}
-              type="text"
-              id="username"
-              autoComplete="username"
-              className="border-2 p-2 rounded-lg mb-3 focus:border-sky-700 focus:outline-none"
-              placeholder="username"
-            />
-            <label htmlFor="password" className="mb-1">
-              Password
-            </label>
-            <input
-              ref={passwordRef}
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              className="border-2 p-2 rounded-lg mb-2 focus:border-sky-700 focus:outline-none"
-              placeholder="password"
-            />
-            <div className="flex items-center gap-2 mb-10">
-              <input
-                type="checkbox"
-                id="remember_me"
-                onChange={(e) => setRememberUser(e.target.checked)}
-                value={rememberUser}
-              />
-              <label className="text-sm" htmlFor="remember_me">
-                Remember me
-              </label>
-            </div>
-            <button
-              className={`${
-                loginMutation.isLoading ? "bg-sky-500" : "bg-sky-700"
-              } px-7 py-2 rounded-lg w-fit self-end text-white`}
-              type="submit"
-              disabled={loginMutation.isLoading}
+          {loginMutation.isSuccess && (
+            <h1 className="font-medium md:text-2xl text-xl text-center text-sky-700 uppercase">
+              welcome {loginMutation.data.data.username}
+            </h1>
+          )}
+          {!loginMutation.isSuccess && (
+            <form
+              className="flex flex-col md:w-96 w-72 mt-5"
+              onSubmit={loginMutation.isLoading ? null : handleLogin}
             >
-              Login
-            </button>
-          </form>
+              <label htmlFor="username" className="mb-1">
+                Username
+              </label>
+              <input
+                ref={usernameRef}
+                type="text"
+                id="username"
+                autoComplete="username"
+                className="border-2 p-2 rounded-lg mb-3 focus:border-sky-700 focus:outline-none"
+                placeholder="username"
+                disabled={loginMutation.isLoading}
+              />
+              <label htmlFor="password" className="mb-1">
+                Password
+              </label>
+              <input
+                ref={passwordRef}
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                className="border-2 p-2 rounded-lg mb-2 focus:border-sky-700 focus:outline-none"
+                placeholder="password"
+                disabled={loginMutation.isLoading}
+              />
+              <div className="flex items-center gap-2 mb-10">
+                <input
+                  type="checkbox"
+                  id="remember_me"
+                  onChange={(e) => setRememberUser(e.target.checked)}
+                  value={rememberUser}
+                  disabled={loginMutation.isLoading}
+                />
+                <label className="text-sm" htmlFor="remember_me">
+                  Remember me
+                </label>
+              </div>
+              <button
+                className={`${
+                  loginMutation.isLoading ? "bg-sky-500" : "bg-sky-700"
+                } px-7 py-2 rounded-lg w-fit self-end text-white`}
+                type="submit"
+                disabled={loginMutation.isLoading}
+              >
+                Login
+              </button>
+            </form>
+          )}
         </div>
       </section>
       <aside className="w-1/3 hidden md:block">

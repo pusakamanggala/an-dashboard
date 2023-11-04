@@ -3,9 +3,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const useNotification = () => {
   const showToast = (message, type, options = {}) => {
-    // Dismiss any open toast before showing a new one
-    toast.dismiss();
-
     const isMobile = window.innerWidth <= 767;
     const defaultOptions = {
       position: isMobile ? "top-right" : "bottom-right",
@@ -15,12 +12,23 @@ const useNotification = () => {
 
     const toastOptions = { ...defaultOptions, ...options };
 
+    // Dismiss any existing toast
+    toast.dismiss();
+
     if (type === "success") {
-      toast.success(message, toastOptions, { autoClose: 2000 });
+      toast.success(message, { ...toastOptions, autoClose: false });
     } else if (type === "error") {
-      toast.error(message, toastOptions);
+      toast.error(message, { ...toastOptions, autoClose: false });
     } else if (type === "loading") {
-      toast.loading(message, { ...toastOptions, autoClose: false });
+      // Do not dismiss the loading toast
+      toast.loading(message, {
+        ...toastOptions,
+        autoClose: false,
+        style: {
+          background: "#0369a1",
+          color: "#fff",
+        },
+      });
     } else if (type === "warning") {
       toast.warning(message, toastOptions);
     }

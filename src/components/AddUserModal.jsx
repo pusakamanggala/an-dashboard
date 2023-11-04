@@ -45,7 +45,7 @@ const AddUserModal = ({ toggleModal }) => {
       !userEmailRef.current.value ||
       !userRole
     ) {
-      notifyWarning("Please fill all the fields");
+      notifyWarning("Please fill all the required fields");
       return;
     }
 
@@ -83,14 +83,11 @@ const AddUserModal = ({ toggleModal }) => {
     addMemberMutation.mutate({ data });
   };
 
-  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
-    useNotification();
+  const { notifyWarning } = useNotification();
 
+  // reset form after mutation is success
   useEffect(() => {
-    if (addMemberMutation.isLoading) {
-      notifyLoading("Adding user...");
-    } else if (addMemberMutation.isSuccess) {
-      notifySuccess("User added successfully");
+    if (addMemberMutation.isSuccess) {
       userFullNameRef.current.value = null;
       usernameRef.current.value = null;
       passwordRef.current.value = null;
@@ -98,11 +95,35 @@ const AddUserModal = ({ toggleModal }) => {
       setUserRole(null);
       setUserNamespaces([]);
       addMemberMutation.reset();
-    } else if (addMemberMutation.isError) {
-      notifyError(addMemberMutation.error?.response?.data?.message || "Error");
-      addMemberMutation.reset();
     }
-  }, [addMemberMutation, notifyLoading, notifySuccess, notifyError]);
+  }, [addMemberMutation]);
+
+  const handleCloseModal = () => {
+    if (
+      userFullNameRef.current.value ||
+      usernameRef.current.value ||
+      passwordRef.current.value ||
+      userEmailRef.current.value ||
+      userRole ||
+      userNamespaces.length > 0
+    ) {
+      if (
+        window.confirm(
+          "All unsaved changes will be lost. Are you sure you want to close this form?"
+        )
+      ) {
+        toggleModal();
+        userFullNameRef.current.value = null;
+        usernameRef.current.value = null;
+        passwordRef.current.value = null;
+        userEmailRef.current.value = null;
+        setUserRole(null);
+        setUserNamespaces([]);
+      }
+    } else {
+      toggleModal();
+    }
+  };
 
   return (
     <>
@@ -121,7 +142,7 @@ const AddUserModal = ({ toggleModal }) => {
             <button
               title="Close"
               type="button"
-              onClick={toggleModal}
+              onClick={handleCloseModal}
               disabled={addMemberMutation.isLoading}
             >
               <svg
@@ -190,10 +211,8 @@ const AddUserModal = ({ toggleModal }) => {
                   placeholder="Password"
                   disabled={addMemberMutation.isLoading}
                   className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
-                  onKeyDown={(e) => {
-                    if (e.key === " ") {
-                      e.preventDefault();
-                    }
+                  onChange={(e) => {
+                    e.target.value = e.target.value.trim();
                   }}
                 />
               </div>
@@ -204,17 +223,15 @@ const AddUserModal = ({ toggleModal }) => {
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 ref={userEmailRef}
                 autoComplete="off"
                 id="email"
                 placeholder="example@email.com"
                 className="p-2 rounded-lg border-2 border-gray-300 outline-none focus:border-sky-700"
                 disabled={addMemberMutation.isLoading}
-                onKeyDown={(e) => {
-                  if (e.key === " ") {
-                    e.preventDefault();
-                  }
+                onChange={(e) => {
+                  e.target.value = e.target.value.trim();
                 }}
               />
             </div>
@@ -256,6 +273,7 @@ const AddUserModal = ({ toggleModal }) => {
                   type="button"
                   title="Create New Namespace"
                   onClick={handleAddNamespaceModal}
+                  disabled={addMemberMutation.isLoading}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
