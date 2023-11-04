@@ -87,7 +87,7 @@ const ProjectConfigTable = ({ projectConfigData }) => {
 
   return (
     <>
-      <section className="px-5 border-2 rounded-2xl w-full overflow-y-auto">
+      <section className="px-5 border-2 rounded-2xl w-full overflow-y-auto min-h-[400px]">
         <table className="border-separate border-spacing-y-5 text-sm w-full font-medium">
           <thead>
             <tr className="h-10 align-top text-gray-500 divide-y-reverse divide-y-2">
@@ -182,9 +182,7 @@ const ProjectConfigTable = ({ projectConfigData }) => {
                       <div
                         ref={optionsMenuRef}
                         className={`absolute bg-white border border-gray-300 rounded-md right-5 shadow-md z-50 text-start w-28 p-2 ${
-                          index >= paginatedProjectConfigData.data.length - 2
-                            ? "bottom-7"
-                            : ""
+                          index > 2 ? "bottom-7" : ""
                         }`}
                       >
                         <ul className="space-y-3">
