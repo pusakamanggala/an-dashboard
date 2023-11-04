@@ -2,65 +2,25 @@ import usePageTitle from "../hooks/usePageTitle";
 import DeploymentTable from "../components/DeploymentTable";
 import AddDeploymentModal from "../components/AddDeploymentModal";
 import { useState } from "react";
+import { useGetDeployments } from "../hooks/useGetDeployments";
+import TableSkeleton from "../components/TableSkeleton";
 
 const Deployment = () => {
   const pageTitle = usePageTitle();
   const [isAddDeploymentModalShow, setIsAddDeploymentModalShow] =
     useState(false);
 
-  //   deployment dummy data
-  const deploymentData = [
-    {
-      id: 1,
-      service_name: "Manual Book",
-      images: "john doe",
-      namespace: "budi",
-      project_owner: "Git123",
-      deploy_at: "2021-08-01 12:00:00",
-      restart: "4",
-      status: "complete",
-    },
-    {
-      id: 5,
-      service_name: "Manual Book",
-      images: "john doe",
-      namespace: "budi",
-      project_owner: "Git123",
-      deploy_at: "2021-08-01 12:00:00",
-      restart: "4",
-      status: "complete",
-    },
-    {
-      id: 2,
-      service_name: "User Manual",
-      images: "jane smith",
-      namespace: "alice",
-      project_owner: "Git456",
-      deploy_at: "2021-08-02 14:30:00",
-      restart: "2",
-      status: "pending",
-    },
-    {
-      id: 3,
-      service_name: "My Awesome App",
-      images: "bob ross",
-      namespace: "charlie",
-      project_owner: "Git789",
-      deploy_at: "2021-08-03 10:15:00",
-      restart: "1",
-      status: "failed",
-    },
-    {
-      id: 4,
-      service_name: "Cool Project",
-      images: "susan brown",
-      namespace: "david",
-      project_owner: "Git101",
-      deploy_at: "2021-08-04 16:45:00",
-      restart: "3",
-      status: "on-delivery",
-    },
-  ];
+  const handleAddDeploymentModal = () => {
+    setIsAddDeploymentModalShow(!isAddDeploymentModalShow);
+  };
+
+  const {
+    data: deploymentData,
+    isLoading: deploymentIsLoading,
+    isError: deploymentIsError,
+    isSuccess: deploymentIsSuccess,
+    error: deploymentError,
+  } = useGetDeployments();
 
   return (
     <>
@@ -70,9 +30,7 @@ const Deployment = () => {
           <button
             className="border-2 flex space-x-2 w-fit px-4 py-2 rounded-lg font-semibold bg-sky-700 text-white hover:bg-sky-950 transition-colors duration-300"
             type="button"
-            onClick={() =>
-              setIsAddDeploymentModalShow(!isAddDeploymentModalShow)
-            }
+            onClick={handleAddDeploymentModal}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -91,12 +49,22 @@ const Deployment = () => {
             <span>Add Deployment</span>
           </button>
         </div>
-        <DeploymentTable deploymentData={deploymentData} />
+        {deploymentIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
+        {deploymentIsSuccess && deploymentData.data.length > 0 && (
+          <DeploymentTable deploymentData={deploymentData.data} />
+        )}
+        {deploymentIsSuccess && deploymentData.data.length === 0 && (
+          <p>No addons has been deployed</p>
+        )}
+        {deploymentIsError && (
+          <p className="text-sky-700 font-semibold">
+            {deploymentError.response.data.message}
+          </p>
+        )}
       </section>
-      <AddDeploymentModal
-        setIsOpen={setIsAddDeploymentModalShow}
-        isOpen={isAddDeploymentModalShow}
-      />
+      {isAddDeploymentModalShow && (
+        <AddDeploymentModal toggle={handleAddDeploymentModal} />
+      )}
     </>
   );
 };
