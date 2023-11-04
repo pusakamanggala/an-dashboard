@@ -36,7 +36,7 @@ const Sidebar = ({ isOpen }) => {
               to="/dashboard"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={GridIcon} alt="" />
+              <img src={GridIcon} alt="dashboard_icon" className="h-6 w-6" />
               <span>Dashboard</span>
             </NavLink>
           </li>
@@ -45,7 +45,7 @@ const Sidebar = ({ isOpen }) => {
               to="/deploy"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={CloudIcon} alt="" />
+              <img src={CloudIcon} alt="deploy_icon" className="h-6 w-6" />
               <span>Deploy</span>
             </NavLink>
           </li>
@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen }) => {
               to="/images"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={BoxIcon} alt="" />
+              <img src={BoxIcon} alt="images_icon" className="h-6 w-6" />
               <span>Images</span>
             </NavLink>
           </li>
@@ -63,7 +63,7 @@ const Sidebar = ({ isOpen }) => {
               to="/service"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={ToolIcon} alt="" />
+              <img src={ToolIcon} alt="service_icon" className="h-6 w-6" />
               <span>Service</span>
             </NavLink>
           </li>
@@ -72,7 +72,7 @@ const Sidebar = ({ isOpen }) => {
               to="/addons"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={PackageIcon} alt="" />
+              <img src={PackageIcon} alt="addons_icon" className="h-6 w-6" />
               <span>Addons</span>
             </NavLink>
           </li>
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen }) => {
               to="/members"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={UsersIcon} alt="" />
+              <img src={UsersIcon} alt="members_icon" className="h-6 w-6" />
               <span>Members</span>
             </NavLink>
           </li>
@@ -95,7 +95,11 @@ const Sidebar = ({ isOpen }) => {
               to="/project-config"
               className={({ isActive }) => (isActive ? "active" : "inActive")}
             >
-              <img src={LayersIcon} alt="" />
+              <img
+                src={LayersIcon}
+                alt="project_config_icon"
+                className="h-6 w-6"
+              />
               <span>Project Config</span>
             </NavLink>
           </li>
