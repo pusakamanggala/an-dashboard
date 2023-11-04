@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import PropTypes from "prop-types";
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -40,6 +41,10 @@ const DashboardLayout = ({ children }) => {
       </div>
     </div>
   );
+};
+
+DashboardLayout.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default DashboardLayout;
