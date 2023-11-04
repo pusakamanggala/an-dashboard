@@ -152,13 +152,13 @@ SummaryCard.propTypes = {
   icon: PropsTypes.string.isRequired,
   title: PropsTypes.string.isRequired,
   value: PropsTypes.number.isRequired,
-  readyInstanceValue: PropsTypes.number.isRequired,
-  diskPressureValue: PropsTypes.number.isRequired,
-  runningInstanceValue: PropsTypes.number.isRequired,
-  pendingInstanceValue: PropsTypes.number.isRequired,
-  memoryPressureValue: PropsTypes.number.isRequired,
-  pidPressureValue: PropsTypes.number.isRequired,
-  networkUnavailableValue: PropsTypes.number.isRequired,
+  readyInstanceValue: PropsTypes.number,
+  diskPressureValue: PropsTypes.number,
+  runningInstanceValue: PropsTypes.number,
+  pendingInstanceValue: PropsTypes.number,
+  memoryPressureValue: PropsTypes.number,
+  pidPressureValue: PropsTypes.number,
+  networkUnavailableValue: PropsTypes.number,
 };
 
 export default SummaryCard;
