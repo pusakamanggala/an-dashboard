@@ -8,8 +8,12 @@ import PackageIcon from "../icons/package.svg";
 import LayersIcon from "../icons/layers-alt.svg";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
+import UserContext from "../context/UserContext";
+import { useContext } from "react";
 
 const Sidebar = ({ isOpen }) => {
+  const { userRole } = useContext(UserContext);
+
   return (
     <aside
       className={`sidebar h-full bg-sky-950 p-6 text-white overflow-y-auto w-64 md:relative transition-all duration-500 fixed inset-y-0 left-0 md:translate-x-0 z-50 ${
@@ -81,15 +85,17 @@ const Sidebar = ({ isOpen }) => {
           <li>
             <h2>Administrator</h2>
           </li>
-          <li>
-            <NavLink
-              to="/members"
-              className={({ isActive }) => (isActive ? "active" : "inActive")}
-            >
-              <img src={UsersIcon} alt="members_icon" className="h-6 w-6" />
-              <span>Members</span>
-            </NavLink>
-          </li>
+          {userRole === "admin" && (
+            <li>
+              <NavLink
+                to="/members"
+                className={({ isActive }) => (isActive ? "active" : "inActive")}
+              >
+                <img src={UsersIcon} alt="members_icon" className="h-6 w-6" />
+                <span>Members</span>
+              </NavLink>
+            </li>
+          )}
           <li>
             <NavLink
               to="/project-config"

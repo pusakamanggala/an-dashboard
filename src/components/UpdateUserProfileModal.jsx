@@ -4,8 +4,12 @@ import { formatTimestamp, getRoleByRoleID } from "../utils/helper";
 import useNotification from "../hooks/useNotification";
 import { useUpdateUserProfile } from "../hooks/useUpdateUserProfile";
 import PropTypes from "prop-types";
+import UserContext from "../context/UserContext";
+import { useContext } from "react";
 
 const UpdateUserProfileModal = ({ toggleModal, userData }) => {
+  const { userRole } = useContext(UserContext);
+
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePictureURL, setProfilePictureURL] = useState(
     userData.data.imageUrl
@@ -114,15 +118,17 @@ const UpdateUserProfileModal = ({ toggleModal, userData }) => {
               alt={userData.data.name + " profile picture"}
               className="h-40 w-40 object-cover rounded-full border-2 border-sky-700 p-1"
             />
-            <label className="relative inline-flex items-center bg-white text-sky-700 rounded-lg p-2 cursor-pointer border border-gray-300 hover:border-sky-700">
-              <span>Upload picture (Max: 5Mb)</span>
-              <input
-                type="file"
-                className="sr-only" // This class hides the input element
-                onChange={uploadProfilePicture}
-                accept="image/jpeg, image/png"
-              />
-            </label>
+            {userRole !== "viewer" && (
+              <label className="relative inline-flex items-center bg-white text-sky-700 rounded-lg p-2 cursor-pointer border border-gray-300 hover:border-sky-700">
+                <span>Upload picture (Max: 5Mb)</span>
+                <input
+                  type="file"
+                  className="sr-only" // This class hides the input element
+                  onChange={uploadProfilePicture}
+                  accept="image/jpeg, image/png"
+                />
+              </label>
+            )}
           </div>
           {/* user full name */}
           <div className="flex flex-col">
@@ -135,6 +141,7 @@ const UpdateUserProfileModal = ({ toggleModal, userData }) => {
               onChange={(e) => setUserFullName(e.target.value)}
               id="user_full_name"
               className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
+              disabled={userRole === "viewer"}
             />
           </div>
           <div className="grid md:grid-cols-2 md:gap-3 gap-5">
@@ -163,40 +170,44 @@ const UpdateUserProfileModal = ({ toggleModal, userData }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 id="user_email"
                 className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
+                disabled={userRole === "viewer"}
               />
             </div>
           </div>
-          <div className="grid md:grid-cols-2 md:gap-3 gap-5">
-            {/* set new password */}
-            <div className="flex flex-col">
-              <label htmlFor="new_password" className="font-semibold">
-                Set New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => handlePasswordChange(e, setNewPassword)}
-                autoComplete="off"
-                id="new_password"
-                className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
-              />
+          {userRole !== "viewer" && (
+            <div className="grid md:grid-cols-2 md:gap-3 gap-5">
+              {/* set new password */}
+              <div className="flex flex-col">
+                <label htmlFor="new_password" className="font-semibold">
+                  Set New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => handlePasswordChange(e, setNewPassword)}
+                  autoComplete="off"
+                  id="new_password"
+                  className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
+                />
+              </div>
+              {/* confirm new password */}
+              <div className="flex flex-col">
+                <label htmlFor="confirm_new_password" className="font-semibold">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={confirmPassword}
+                  disabled={newPassword.trim() === ""}
+                  onChange={(e) => handlePasswordChange(e, setConfirmPassword)}
+                  id="confirm_new_password"
+                  className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
+                />
+              </div>
             </div>
-            {/* confirm new password */}
-            <div className="flex flex-col">
-              <label htmlFor="confirm_new_password" className="font-semibold">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                autoComplete="off"
-                value={confirmPassword}
-                disabled={newPassword.trim() === ""}
-                onChange={(e) => handlePasswordChange(e, setConfirmPassword)}
-                id="confirm_new_password"
-                className="p-2 rounded-lg border border-gray-300 outline-none focus:border-sky-700"
-              />
-            </div>
-          </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col">
               <h1 className="font-semibold">Role</h1>
@@ -222,21 +233,25 @@ const UpdateUserProfileModal = ({ toggleModal, userData }) => {
             </div>
           </div>
           {/* Add button */}
-          <div className="flex justify-end">
-            <button
-              title={updateUSerProfileMutation.isLoading ? "Saving..." : "Save"}
-              type="button"
-              className={`${
-                updateUSerProfileMutation.isLoading
-                  ? "bg-sky-400"
-                  : "bg-sky-700 hover:bg-sky-950 transition-colors duration-300"
-              } " px-3 py-2 rounded-md text-white "`}
-              onClick={handleSaveProfileUpdate}
-              disabled={updateUSerProfileMutation.isLoading}
-            >
-              {updateUSerProfileMutation.isLoading ? "Saving..." : "Save"}
-            </button>
-          </div>
+          {userRole !== "viewer" && (
+            <div className="flex justify-end">
+              <button
+                title={
+                  updateUSerProfileMutation.isLoading ? "Saving..." : "Save"
+                }
+                type="button"
+                className={`${
+                  updateUSerProfileMutation.isLoading
+                    ? "bg-sky-400"
+                    : "bg-sky-700 hover:bg-sky-950 transition-colors duration-300"
+                } " px-3 py-2 rounded-md text-white "`}
+                onClick={handleSaveProfileUpdate}
+                disabled={updateUSerProfileMutation.isLoading}
+              >
+                {updateUSerProfileMutation.isLoading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

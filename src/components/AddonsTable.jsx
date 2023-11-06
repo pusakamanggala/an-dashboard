@@ -8,8 +8,12 @@ import AddonsDetailModal from "./AddonsDetailModal";
 import { formatTimestamp, getBadgeColor, paginate } from "../utils/helper";
 import { useSearchParams } from "react-router-dom";
 import { useDeleteAddons } from "../hooks/useDeleteAddons";
+import UserContext from "../context/UserContext";
+import { useContext } from "react";
 
 const AddonsTable = ({ addonsData }) => {
+  const { userRole } = useContext(UserContext);
+
   const [detailModalIsOpen, setDetailModalIsOpen] = useState(false);
   const [selectedAddonsPodName, setSelectedAddonsPodName] = useState("");
   const [selectedAddonsNamespace, setSelectedAddonsNamespace] = useState("");
@@ -92,9 +96,11 @@ const AddonsTable = ({ addonsData }) => {
               </th>
               <th className="font-semibold px-6">Restart</th>
               <th className="font-semibold w-40">Status</th>
-              <th scope="col" className="font-semibold px-6">
-                Action
-              </th>
+              {userRole !== "viewer" && (
+                <th scope="col" className="font-semibold px-6">
+                  Action
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -135,88 +141,90 @@ const AddonsTable = ({ addonsData }) => {
                     {addonsData.status}
                   </h1>
                 </td>
-                <td>
-                  <div className="w-fit mx-auto relative">
-                    <button
-                      title="Action"
-                      type="button"
-                      onClick={(event) => {
-                        toggleOptionsMenu(index);
-                        event.stopPropagation(); // Prevent the click event from bubbling up to the window
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
+                {userRole !== "viewer" && (
+                  <td>
+                    <div className="w-fit mx-auto relative">
+                      <button
+                        title="Action"
+                        type="button"
+                        onClick={(event) => {
+                          toggleOptionsMenu(index);
+                          event.stopPropagation(); // Prevent the click event from bubbling up to the window
+                        }}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                        />
-                      </svg>
-                    </button>
-                    {openMenuIndex === index && (
-                      <div
-                        ref={optionsMenuRef}
-                        className={`absolute bg-white border border-gray-300 rounded-md right-5 shadow-md z-50 text-start w-28 p-2 ${
-                          index > 1 ? "bottom-7" : ""
-                        }`}
-                      >
-                        <ul className="space-y-3">
-                          <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md">
-                            <button
-                              className="flex space-x-2 items-center w-full"
-                              title="Addons Detail"
-                              onClick={() =>
-                                handleDetailModal(
-                                  addonsData.podName,
-                                  addonsData.namespace
-                                )
-                              }
-                            >
-                              <img src={infoIcon} alt="" />
-                              <span>Detail</span>
-                            </button>
-                          </li>
-                          <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                            <button className="flex space-x-2 items-center w-full">
-                              <img src={TerminalIcon} alt="" />
-                              <span>Terminal</span>
-                            </button>
-                          </li>
-                          <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                            <button className="flex space-x-2 items-center w-full">
-                              <img src={ActivityAltIcon} alt="" />
-                              <span>Log</span>
-                            </button>
-                          </li>
-                          <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                            <button
-                              className="flex space-x-2 items-center w-full"
-                              type="button"
-                              title="Delete Addons"
-                              onClick={() => {
-                                handleDeleteAddons(
-                                  addonsData.namespace,
-                                  addonsData.adonsName,
-                                  addonsData.projectOwner
-                                );
-                              }}
-                            >
-                              <img src={DeleteIcon} alt="" />
-                              <span>Delete</span>
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </td>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                          />
+                        </svg>
+                      </button>
+                      {openMenuIndex === index && (
+                        <div
+                          ref={optionsMenuRef}
+                          className={`absolute bg-white border border-gray-300 rounded-md right-5 shadow-md z-50 text-start w-28 p-2 ${
+                            index > 1 ? "bottom-7" : ""
+                          }`}
+                        >
+                          <ul className="space-y-3">
+                            <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md">
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                title="Addons Detail"
+                                onClick={() =>
+                                  handleDetailModal(
+                                    addonsData.podName,
+                                    addonsData.namespace
+                                  )
+                                }
+                              >
+                                <img src={infoIcon} alt="" />
+                                <span>Detail</span>
+                              </button>
+                            </li>
+                            <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
+                              <button className="flex space-x-2 items-center w-full">
+                                <img src={TerminalIcon} alt="" />
+                                <span>Terminal</span>
+                              </button>
+                            </li>
+                            <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
+                              <button className="flex space-x-2 items-center w-full">
+                                <img src={ActivityAltIcon} alt="" />
+                                <span>Log</span>
+                              </button>
+                            </li>
+                            <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                type="button"
+                                title="Delete Addons"
+                                onClick={() => {
+                                  handleDeleteAddons(
+                                    addonsData.namespace,
+                                    addonsData.adonsName,
+                                    addonsData.projectOwner
+                                  );
+                                }}
+                              >
+                                <img src={DeleteIcon} alt="" />
+                                <span>Delete</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
