@@ -2,12 +2,15 @@ import { useContext, useEffect, useRef, useState } from "react";
 import UserContext from "../context/UserContext";
 import { useGetUserByIDAlt } from "../hooks/useGetUserByIDAlt";
 import UpdateUserProfileModal from "./UpdateUserProfileModal";
+import { useLogout } from "../hooks/useLogout";
 
 const Header = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [isUpdateProfileModalOpen, setIsUpdateProfileModalOpen] =
     useState(false);
+
+  const logoutMutation = useLogout();
 
   const handleUpdateProfileModal = () => {
     setIsUpdateProfileModalOpen(!isUpdateProfileModalOpen);
@@ -31,11 +34,10 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    // clear auth-token
-    document.cookie =
-      "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    // reload page
-    window.location.reload();
+    window.confirm("Are you sure you want to logout?") &&
+      logoutMutation.mutate();
+    setIsNotificationOpen(false);
+    setIsProfileDropdownOpen(false);
   };
 
   useEffect(() => {
