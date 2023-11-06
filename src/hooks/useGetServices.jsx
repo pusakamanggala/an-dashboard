@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchServices() {
   const token = getToken();
@@ -17,9 +18,15 @@ async function fetchServices() {
 }
 
 export function useGetServices() {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(["services"], () => fetchServices(), {
     enabled: !!getToken(),
     cacheTime: 3000,
     staleTime: 5000,
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }

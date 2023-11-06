@@ -2,10 +2,13 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { getToken } from "../utils/helper";
 import useNotification from "./useNotification";
+import { useRefreshToken } from "./useRefreshToken";
 
 export function useDeleteProject() {
   const queryClient = useQueryClient();
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+  const refreshTokenMutation = useRefreshToken();
 
   return useMutation(
     async (projectID) => {
@@ -29,11 +32,14 @@ export function useDeleteProject() {
         notifySuccess("Project has been deleted");
       },
       onError: (error) => {
-        // show error from response if available
-        notifyError(
-          error?.response?.data?.message ||
-            "Something went wrong while deleting project"
-        );
+        if (error?.response?.status === 400) {
+          refreshTokenMutation.mutate();
+          notifyWarning("Process has been canceled, please try again");
+        } else
+          notifyError(
+            error?.response?.data?.message ||
+              "Something went wrong while deleting project"
+          );
       },
       onMutate: () => {
         notifyLoading("Deleting project...");

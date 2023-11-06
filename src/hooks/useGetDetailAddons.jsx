@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchDetailAddons(podName, namespace) {
   const token = getToken(); // Get the token from the utility function
@@ -19,11 +20,17 @@ async function fetchDetailAddons(podName, namespace) {
 }
 
 export function useGetDetailAddons(podName, namespace) {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(
     ["detailAddons", podName, namespace],
     () => fetchDetailAddons(podName, namespace),
     {
       enabled: !!getToken() && !!podName && !!namespace,
+      onError: (error) => {
+        if (error?.response?.status === 400) {
+          refreshTokenMutation.mutate();
+        }
+      },
     }
   );
 }

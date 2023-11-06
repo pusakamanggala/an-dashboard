@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchDetailProject(projectID) {
   const token = getToken(); // Get the token from the utility function
@@ -19,11 +20,17 @@ async function fetchDetailProject(projectID) {
 }
 
 export function useGetDetailProject(projectID) {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(
     ["detailProject", projectID],
     () => fetchDetailProject(projectID),
     {
       enabled: !!getToken() && !!projectID,
+      onError: (error) => {
+        if (error?.response?.status === 400) {
+          refreshTokenMutation.mutate();
+        }
+      },
     }
   );
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchDeploymentImages() {
   const token = getToken();
@@ -17,7 +18,13 @@ async function fetchDeploymentImages() {
 }
 
 export function useGetDeploymentImages() {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(["deploymentImages"], () => fetchDeploymentImages(), {
     enabled: !!getToken(),
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }

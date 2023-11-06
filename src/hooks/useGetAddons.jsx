@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchAddons() {
   const token = getToken();
@@ -17,9 +18,16 @@ async function fetchAddons() {
 }
 
 export function useGetAddons() {
+  const refreshTokenMutation = useRefreshToken();
+
   return useQuery(["addons"], () => fetchAddons(), {
     enabled: !!getToken(),
     cacheTime: 3000,
     staleTime: 4000,
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchUserByID(id) {
   const token = getToken(); // Get the token from the utility function
@@ -17,7 +18,13 @@ async function fetchUserByID(id) {
 }
 
 export function useGetUserByID(id) {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(["user", id], () => fetchUserByID(id), {
     enabled: id !== undefined && getToken() !== undefined,
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }

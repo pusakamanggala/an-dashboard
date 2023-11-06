@@ -2,10 +2,13 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { getToken } from "../utils/helper";
 import useNotification from "./useNotification";
+import { useRefreshToken } from "./useRefreshToken";
 
 export function useUpdateUserProfileFromAdmin() {
   const queryClient = useQueryClient();
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+  const refreshTokenMutation = useRefreshToken();
 
   return useMutation(
     async ({ userID, data }) => {
@@ -33,8 +36,11 @@ export function useUpdateUserProfileFromAdmin() {
         notifySuccess("User profile has been updated");
       },
       onError: (error) => {
-        // Show error from response if available
-        notifyError(error?.response?.data?.message || "Something went wrong");
+        if (error?.response?.status === 400) {
+          refreshTokenMutation.mutate();
+          notifyWarning("Process has been canceled, please try again");
+        } else
+          notifyError(error?.response?.data?.message || "Something went wrong");
       },
       onMutate: () => {
         notifyLoading("Updating profile...");

@@ -2,10 +2,13 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { getToken } from "../utils/helper";
 import useNotification from "./useNotification";
+import { useRefreshToken } from "./useRefreshToken";
 
 export function useAddProject() {
   const queryClient = useQueryClient();
-  const { notifyLoading, notifySuccess, notifyError } = useNotification();
+  const { notifyLoading, notifySuccess, notifyError, notifyWarning } =
+    useNotification();
+  const refreshTokenMutation = useRefreshToken();
 
   return useMutation(
     async ({ data }) => {
@@ -30,11 +33,14 @@ export function useAddProject() {
         notifySuccess("Project config added successfully");
       },
       onError: (error) => {
-        // show error from response if available
-        notifyError(
-          error?.response?.data?.message ||
-            "Something went wrong while adding project config"
-        );
+        if (error?.response?.status === 400) {
+          refreshTokenMutation.mutate();
+          notifyWarning("Process has been canceled, please try again");
+        } else
+          notifyError(
+            error?.response?.data?.message ||
+              "Something went wrong while adding project config"
+          );
       },
       onMutate: () => {
         notifyLoading("Adding project config...");

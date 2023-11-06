@@ -30,10 +30,13 @@ export function useAddDeployment() {
         notifySuccess("Deployment Added Successfully");
       },
       onError: (error) => {
-        notifyError(
-          error?.response?.data?.message ||
-            "Something went wrong when deploying"
-        );
+        if (error?.response?.status === 400) {
+          notifyError("Process has been canceled, please try again");
+        } else
+          notifyError(
+            error?.response?.data?.message ||
+              "Something went wrong when deploying"
+          );
       },
       onMutate: () => {
         notifyLoading("Deploying...");

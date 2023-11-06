@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 async function fetchImagesPullSecret() {
   const token = getToken();
@@ -19,7 +20,13 @@ async function fetchImagesPullSecret() {
 }
 
 export function useGetImagesPullSecret() {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(["imagesPullSecret"], () => fetchImagesPullSecret(), {
     enabled: !!getToken(),
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }

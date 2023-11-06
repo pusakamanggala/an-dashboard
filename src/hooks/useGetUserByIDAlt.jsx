@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { getToken } from "../utils/helper";
+import { useRefreshToken } from "./useRefreshToken";
 
 // This endpoint can be access by reqular users
 async function fetchUserByID(id) {
@@ -18,7 +19,13 @@ async function fetchUserByID(id) {
 }
 
 export function useGetUserByIDAlt(id) {
+  const refreshTokenMutation = useRefreshToken();
   return useQuery(["user", id], () => fetchUserByID(id), {
     enabled: id !== undefined && getToken() !== undefined,
+    onError: (error) => {
+      if (error?.response?.status === 400) {
+        refreshTokenMutation.mutate();
+      }
+    },
   });
 }
