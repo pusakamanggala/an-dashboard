@@ -10,6 +10,7 @@ import { useSearchParams } from "react-router-dom";
 import { useDeleteAddons } from "../hooks/useDeleteAddons";
 import UserContext from "../context/UserContext";
 import { useContext } from "react";
+import useTerminals from "../hooks/useTerminals";
 
 const AddonsTable = ({ addonsData }) => {
   const { userRole } = useContext(UserContext);
@@ -73,6 +74,8 @@ const AddonsTable = ({ addonsData }) => {
       window.removeEventListener("click", handleOutsideClick);
     };
   }, [optionsMenuRef]);
+
+  const { addTerminal } = useTerminals();
 
   return (
     <>
@@ -191,13 +194,31 @@ const AddonsTable = ({ addonsData }) => {
                               </button>
                             </li>
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                              <button className="flex space-x-2 items-center w-full">
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                onClick={() =>
+                                  addTerminal(
+                                    addonsData.podName,
+                                    addonsData.namespace,
+                                    "exec"
+                                  )
+                                }
+                              >
                                 <img src={TerminalIcon} alt="" />
                                 <span>Terminal</span>
                               </button>
                             </li>
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                              <button className="flex space-x-2 items-center w-full">
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                onClick={() =>
+                                  addTerminal(
+                                    addonsData.podName,
+                                    addonsData.namespace,
+                                    "log"
+                                  )
+                                }
+                              >
                                 <img src={ActivityAltIcon} alt="" />
                                 <span>Log</span>
                               </button>

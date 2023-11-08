@@ -2,9 +2,12 @@ import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
+import TerminalSection from "../pages/TerminalSection";
+import useTerminals from "../hooks/useTerminals";
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { activeTerminal } = useTerminals();
 
   return (
     <div className="h-[100dvh] flex">
@@ -38,6 +41,7 @@ const DashboardLayout = ({ children }) => {
       <div className="w-0 flex-1 flex flex-col">
         <Header />
         <main className="p-5 flex-1 overflow-y-auto">{children}</main>
+        {activeTerminal.length > 0 && <TerminalSection />}
       </div>
     </div>
   );

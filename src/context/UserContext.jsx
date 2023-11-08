@@ -6,6 +6,8 @@ import { getToken } from "../utils/helper";
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const [activeTerminal, setActiveTerminal] = useState([]);
+
   const token = getToken();
   const user = useMemo(() => {
     return token ? jwtDecode(token) : null;
@@ -51,9 +53,7 @@ export const UserProvider = ({ children }) => {
     }
   }, [userRole, token]);
 
-  const contextValue = { user, userRole };
-
-  console.log(user, userRole);
+  const contextValue = { user, userRole, activeTerminal, setActiveTerminal };
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
