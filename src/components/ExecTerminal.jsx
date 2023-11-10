@@ -1,11 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+
+// This code is imperfect because it does not use a terminal library that matches ANSI escape codes. The libraries were not used because there were difficulties and unsolved problems during the implementation
+// the entire terminal, handling, and styling components are completely manually built
 
 const ExecTerminal = ({ podName, namespace }) => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState([]);
   const [history, setHistory] = useState([]);
   const [ws, setWs] = useState(null);
+  const [inputPlaceholder, setInputPlaceholder] = useState("");
+
+  const stripANSI = (str) => str.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, "");
 
   useEffect(() => {
     console.log("Component mounted");
@@ -20,8 +26,19 @@ const ExecTerminal = ({ podName, namespace }) => {
 
     ws.onmessage = (e) => {
       const result = e.data;
-      setOutput((prevOutput) => [...prevOutput, result]);
-      console.log(result);
+      // Split the result into lines
+      const resultLines = result
+        .split("\n")
+        .map((line) => stripANSI(line.trim()))
+        .filter((line) => line !== "");
+
+      // Add the result lines to the output state except the last line (which is the input placeholder)
+      if (resultLines.length > 1) {
+        setOutput((prevOutput) => [...prevOutput, ...resultLines.slice(0, -1)]);
+      }
+
+      // Set the last line as the input placeholder
+      setInputPlaceholder(resultLines[resultLines.length - 1]);
     };
 
     ws.onclose = () => {
@@ -47,19 +64,39 @@ const ExecTerminal = ({ podName, namespace }) => {
       setHistory([...history, command]);
 
       // Append the command to the output
-      setOutput((prevOutput) => [...prevOutput, `# ${command}`]);
+      setOutput((prevOutput) => [
+        ...prevOutput,
+        `${inputPlaceholder} ${command}`,
+      ]);
 
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(command);
+        // if command is clear, clear the output and input
+        if (command === "clear") {
+          setOutput([]);
+          setInput("");
+          return;
+        }
+        // command need enter to be executed
+        ws.send(`${command}\n`);
       } else {
-        console.error("WebSocket connection is not open.");
+        console.log("WebSocket is not open");
       }
     }
     setInput(""); // Clear the input field
   };
 
+  const inputRef = useRef(null);
+  const handleTerminalClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
-    <div className="bg-black text-white p-4 overflow-y-auto">
+    <div
+      className="text-white p-4 overflow-y-auto"
+      onClick={handleTerminalClick}
+    >
       <h1>Welcome to Adaptive Shell</h1>
       <h2 className="mb-3">Copyright (C) Adaptive Network Laboratory.</h2>
       <div className="mb-4 space-y-2">
@@ -71,10 +108,11 @@ const ExecTerminal = ({ podName, namespace }) => {
       </div>
       <form onSubmit={handleInputSubmit}>
         <div className="flex ">
-          <h1 className="text-sky-400 whitespace-nowrap">#</h1>
+          <h1 className="text-sky-400 whitespace-nowrap">{inputPlaceholder}</h1>
           <input
             type="text"
             value={input}
+            ref={inputRef}
             autoFocus
             onChange={handleInputChange}
             className="w-full ml-2 bg-transparent text-white focus:outline-none"

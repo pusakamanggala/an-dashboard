@@ -15,7 +15,8 @@ const LogTerminal = ({ podName, namespace }) => {
 
     ws.onmessage = (e) => {
       const logData = e.data;
-      setTerminalData((prevData) => [...prevData, logData]);
+      const logLine = logData.split("\n");
+      setTerminalData((prevData) => [...prevData, logLine]);
       console.log(logData);
     };
 
