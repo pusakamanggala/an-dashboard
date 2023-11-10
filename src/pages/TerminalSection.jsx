@@ -36,7 +36,8 @@ const TerminalSection = () => {
               <div
                 key={index}
                 className={` h-fit p-1 px-2 self-end rounded-t-lg flex gap-3 w-60 ${
-                  terminal.podName === selectedTerminal.podName
+                  terminal.podName === selectedTerminal.podName &&
+                  terminal.terminalType === selectedTerminal.terminalType
                     ? "bg-black text-white"
                     : "text-black cursor-pointer"
                 }`}
@@ -46,7 +47,11 @@ const TerminalSection = () => {
                 <button
                   title="Close Terminal"
                   onClick={() =>
-                    deleteTerminal(terminal.podName, terminal.namespace)
+                    deleteTerminal(
+                      terminal.podName,
+                      terminal.namespace,
+                      terminal.terminalType
+                    )
                   }
                 >
                   <svg
@@ -118,13 +123,14 @@ const TerminalSection = () => {
         {activeTerminal &&
           selectedTerminal &&
           activeTerminal.map((terminal, index) =>
-            terminal.terminalType === "log" ? (
+            terminal.terminalType.includes("log") ? (
               <div
                 key={index}
-                className={` w-full ${
-                  terminal.podName !== selectedTerminal.podName
-                    ? "hidden"
-                    : "block"
+                className={`w-full ${
+                  terminal.podName === selectedTerminal.podName &&
+                  terminal.terminalType === selectedTerminal.terminalType
+                    ? "block"
+                    : "hidden"
                 }`}
               >
                 <LogTerminal
@@ -136,16 +142,18 @@ const TerminalSection = () => {
             ) : (
               <div
                 key={index}
-                className={` w-full ${
-                  terminal.podName !== selectedTerminal.podName
-                    ? "hidden"
-                    : "block"
+                className={`w-full ${
+                  terminal.podName === selectedTerminal.podName &&
+                  terminal.terminalType === selectedTerminal.terminalType
+                    ? "block"
+                    : "hidden"
                 }`}
               >
                 <ExecTerminal
                   key={index}
                   podName={terminal.podName}
                   namespace={terminal.namespace}
+                  terminalType={terminal.terminalType}
                 />
               </div>
             )

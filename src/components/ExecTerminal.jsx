@@ -4,19 +4,23 @@ import PropTypes from "prop-types";
 // This code is imperfect because it does not use a terminal library that matches ANSI escape codes. The libraries were not used because there were difficulties and unsolved problems during the implementation
 // the entire terminal, handling, and styling components are completely manually built
 
-const ExecTerminal = ({ podName, namespace }) => {
+const ExecTerminal = ({ podName, namespace, terminalType }) => {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState([]);
   const [history, setHistory] = useState([]);
   const [ws, setWs] = useState(null);
   const [inputPlaceholder, setInputPlaceholder] = useState("");
+  // terminalType = terminal.type;
+  // get string after . in terminal.type
 
   const stripANSI = (str) => str.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, "");
 
   useEffect(() => {
     console.log("Component mounted");
     const ws = new WebSocket(
-      `wss://api.adaptivenetlab.site/v1/dashboard/kube/main/addons/exec/${namespace}/${podName}`
+      `wss://api.adaptivenetlab.site/v1/dashboard/kube/main/${
+        terminalType.split(".")[0]
+      }/exec/${namespace}/${podName}`
     );
 
     ws.onopen = () => {
@@ -50,7 +54,7 @@ const ExecTerminal = ({ podName, namespace }) => {
         ws.close();
       }
     };
-  }, [namespace, podName]); // Add dependencies
+  }, [namespace, podName, terminalType]);
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
@@ -99,7 +103,7 @@ const ExecTerminal = ({ podName, namespace }) => {
     >
       <h1>Welcome to Adaptive Shell</h1>
       <h2 className="mb-3">Copyright (C) Adaptive Network Laboratory.</h2>
-      <div className="mb-4 space-y-2">
+      <div className="mb-4 space-y-2 whitespace-pre-wrap">
         {output.map((line, index) => (
           <p key={index} className="m-0">
             {line}
@@ -126,6 +130,7 @@ const ExecTerminal = ({ podName, namespace }) => {
 ExecTerminal.propTypes = {
   podName: PropTypes.string.isRequired,
   namespace: PropTypes.string.isRequired,
+  terminalType: PropTypes.string.isRequired,
 };
 
 export default ExecTerminal;

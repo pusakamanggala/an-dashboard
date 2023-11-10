@@ -14,10 +14,12 @@ const LogTerminal = ({ podName, namespace }) => {
     };
 
     ws.onmessage = (e) => {
-      const logData = e.data;
-      const logLine = logData.split("\n");
-      setTerminalData((prevData) => [...prevData, logLine]);
-      console.log(logData);
+      const logData = e.data
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line !== "");
+
+      setTerminalData((prevData) => [...prevData, ...logData]);
     };
 
     ws.onclose = () => {
@@ -29,17 +31,15 @@ const LogTerminal = ({ podName, namespace }) => {
     };
   }, [namespace, podName]);
 
-  console.log(terminalData);
-
   return (
-    <div className="bg-black text-white p-4 overflow-y-auto flex flex-col gap-1">
+    <div className="bg-black text-white p-4 overflow-y-auto">
       <h1>Welcome to Adaptive Shell</h1>
       <h2 className="mb-3">Copyright (C) Adaptive Network Laboratory.</h2>
-      {terminalData.map((log, index) => (
-        <p key={index} className="m-0">
-          {log}
-        </p>
-      ))}
+      <ul className="mb-4 space-y-2 whitespace-pre-wrap">
+        {terminalData.map((log, index) => (
+          <li key={index}>{log}</li>
+        ))}
+      </ul>
     </div>
   );
 };

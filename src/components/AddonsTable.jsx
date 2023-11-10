@@ -200,7 +200,7 @@ const AddonsTable = ({ addonsData }) => {
                                   addTerminal(
                                     addonsData.podName,
                                     addonsData.namespace,
-                                    "exec"
+                                    "addons.exec"
                                   )
                                 }
                               >
@@ -215,7 +215,7 @@ const AddonsTable = ({ addonsData }) => {
                                   addTerminal(
                                     addonsData.podName,
                                     addonsData.namespace,
-                                    "log"
+                                    "addons.log"
                                   )
                                 }
                               >

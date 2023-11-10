@@ -19,7 +19,10 @@ const useTerminals = () => {
     };
 
     const updatedTerminals = activeTerminal.filter(
-      (entry) => entry.podName !== podName || entry.namespace !== namespace
+      (entry) =>
+        entry.podName !== podName ||
+        entry.namespace !== namespace ||
+        entry.terminalType !== terminalType
     );
     updatedTerminals.unshift(newTerminalEntry);
     if (updatedTerminals.length > 4) {
@@ -28,9 +31,12 @@ const useTerminals = () => {
     setActiveTerminal(updatedTerminals);
   };
 
-  const deleteTerminal = (podName, namespace) => {
+  const deleteTerminal = (podName, namespace, terminalType) => {
     const updatedTerminals = activeTerminal.filter(
-      (entry) => entry.podName !== podName || entry.namespace !== namespace
+      (entry) =>
+        entry.podName !== podName ||
+        entry.namespace !== namespace ||
+        entry.terminalType !== terminalType
     );
     setActiveTerminal(updatedTerminals);
   };
