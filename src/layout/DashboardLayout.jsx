@@ -7,6 +7,7 @@ import useTerminals from "../hooks/useTerminals";
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTerminalFullScreen, setIsTerminalFullScreen] = useState(false);
   const { activeTerminal } = useTerminals();
 
   return (
@@ -40,8 +41,21 @@ const DashboardLayout = ({ children }) => {
       </button>
       <div className="w-0 flex-1 flex flex-col">
         <Header />
-        <main className="p-5 flex-1 overflow-y-auto">{children}</main>
-        {activeTerminal.length > 0 && <TerminalSection />}
+
+        <main
+          className={`${
+            isTerminalFullScreen ? "hidden" : "p-5 flex-1 overflow-y-auto"
+          }`}
+        >
+          {children}
+        </main>
+
+        {activeTerminal.length > 0 && (
+          <TerminalSection
+            isFullScreen={isTerminalFullScreen}
+            setIsFullScreen={setIsTerminalFullScreen}
+          />
+        )}
       </div>
     </div>
   );
