@@ -18,12 +18,10 @@ const TerminalSection = () => {
 
   return (
     <section
-      className={`terminal bg-black flex flex-col ${
-        isMinimized ? "h-auto" : "h-2/5"
-      }`}
+      className={`terminal flex flex-col ${isMinimized ? "h-auto" : "h-2/5"}`}
     >
       <header className="bg-[#EAF4F4] overflow-x-auto flex justify-between">
-        <div className="flex w-fit ">
+        <div className="flex w-fit">
           <div className="flex p-3 mr-10 whitespace-nowrap gap-2">
             <img src={TerminalIcon} alt="" className="h-10 w-10" />
             <div>
@@ -113,7 +111,7 @@ const TerminalSection = () => {
       </header>
       {/* Terminal */}
       <div
-        className={`bg-black text-white overflow-y-auto flex flex-1 ${
+        className={`bg-black text-white overflow-y-auto w-full flex flex-1 ${
           isMinimized && "hidden"
         }`}
       >
@@ -123,7 +121,7 @@ const TerminalSection = () => {
             terminal.terminalType === "log" ? (
               <div
                 key={index}
-                className={` ${
+                className={` w-full ${
                   terminal.podName !== selectedTerminal.podName
                     ? "hidden"
                     : "block"
@@ -138,7 +136,7 @@ const TerminalSection = () => {
             ) : (
               <div
                 key={index}
-                className={` ${
+                className={` w-full ${
                   terminal.podName !== selectedTerminal.podName
                     ? "hidden"
                     : "block"
