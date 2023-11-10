@@ -10,6 +10,7 @@ import DeploymentDetailModal from "./DeploymentDetailModal";
 import { useDeleteDeployment } from "../hooks/useDeleteDeployment";
 import UserContext from "../context/UserContext";
 import { useContext } from "react";
+import useTerminals from "../hooks/useTerminals";
 
 const DeploymentTable = ({ deploymentData }) => {
   const { userRole } = useContext(UserContext);
@@ -28,7 +29,7 @@ const DeploymentTable = ({ deploymentData }) => {
 
   const deleteDeploymentMutation = useDeleteDeployment();
   const handleDeleteDeployment = (namespace, serviceName, projectOwner) => {
-    window.confirm("Are you sure you want to delete this addons?") &&
+    window.confirm("Are you sure you want to delete this deployment?") &&
       deleteDeploymentMutation.mutate({ namespace, serviceName, projectOwner });
     setOpenMenuIndex(null);
   };
@@ -76,6 +77,8 @@ const DeploymentTable = ({ deploymentData }) => {
       window.removeEventListener("click", handleOutsideClick);
     };
   }, []);
+
+  const { addTerminal } = useTerminals();
 
   return (
     <>
@@ -181,7 +184,7 @@ const DeploymentTable = ({ deploymentData }) => {
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md">
                               <button
                                 className="flex space-x-2 items-center w-full"
-                                title="Addons Detail"
+                                title="Deployment Detail"
                                 onClick={() =>
                                   handleDetailModal(
                                     deploymentData.podName,
@@ -194,18 +197,40 @@ const DeploymentTable = ({ deploymentData }) => {
                               </button>
                             </li>
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                              <img src={TerminalIcon} alt="" />
-                              <span>Terminal</span>
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                onClick={() =>
+                                  addTerminal(
+                                    deploymentData.podName,
+                                    deploymentData.namespace,
+                                    "deploy.exec"
+                                  )
+                                }
+                              >
+                                <img src={TerminalIcon} alt="" />
+                                <span>Terminal</span>
+                              </button>
                             </li>
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
-                              <img src={ActivityAltIcon} alt="" />
-                              <span>Log</span>
+                              <button
+                                className="flex space-x-2 items-center w-full"
+                                onClick={() =>
+                                  addTerminal(
+                                    deploymentData.podName,
+                                    deploymentData.namespace,
+                                    "deploy.log"
+                                  )
+                                }
+                              >
+                                <img src={ActivityAltIcon} alt="" />
+                                <span>Log</span>
+                              </button>
                             </li>
                             <li className="cursor-pointer hover:bg-black/5 p-1 rounded-md flex space-x-2">
                               <button
                                 className="flex space-x-2 items-center w-full"
                                 type="button"
-                                title="Delete Addons"
+                                title="Delete Deployment"
                                 onClick={() => {
                                   handleDeleteDeployment(
                                     deploymentData.namespace,
