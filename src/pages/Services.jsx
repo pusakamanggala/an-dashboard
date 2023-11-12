@@ -69,11 +69,13 @@ const Services = () => {
       )}
       {servicesIsLoading && (
         <section className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 px-5">
-          {Array(2)
+          {Array(3)
             .fill()
-            .map(() => cardLoadingSkeleton())}
-
-          {cardLoadingSkeleton()}
+            .map((_, index) => (
+              <React.Fragment key={index}>
+                {cardLoadingSkeleton()}
+              </React.Fragment>
+            ))}
         </section>
       )}
     </section>

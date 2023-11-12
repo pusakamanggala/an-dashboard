@@ -63,7 +63,7 @@ const Deployment = () => {
         )}
         {deploymentIsError && (
           <p className="text-sky-700 font-semibold">
-            {deploymentError.response.data.message}
+            {deploymentError?.response?.data?.message || "Something went wrong"}
           </p>
         )}
       </section>

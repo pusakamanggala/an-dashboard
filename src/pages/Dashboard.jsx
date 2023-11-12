@@ -45,8 +45,10 @@ const Dashboard = () => {
 
   const {
     data: eventData,
+    isError: eventIsError,
     isLoading: eventIsLoading,
     isSuccess: eventIsSuccess,
+    error: eventError,
   } = useGetDashboardContent("events");
 
   return (
@@ -109,6 +111,11 @@ const Dashboard = () => {
       {/* table loading skeleton */}
       {eventIsLoading && <TableSkeleton numRows={5} numColumns={4} />}
       {/* deployment timestamp table */}
+      {eventIsError && (
+        <p className="text-sky-700 font-semibold">
+          {eventError.response.data.message}
+        </p>
+      )}
       {eventIsSuccess && <DeploymentTimestamp timestamp={eventData.data} />}
     </section>
   );

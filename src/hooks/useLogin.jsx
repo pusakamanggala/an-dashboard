@@ -52,7 +52,6 @@ export function useLogin(rememberUser) {
       setTimeout(() => {
         window.location.reload();
       }, 2000);
-      console.log(data.data);
     },
     onError: (error) => {
       notifyError(

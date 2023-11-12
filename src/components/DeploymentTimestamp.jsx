@@ -15,7 +15,7 @@ const DeploymentTimestamp = ({ timestamp }) => {
   // paginate data
   const itemsPerPage = 10;
   const [paginationParam, setPaginationParam] = useSearchParams({ page: "1" });
-  const currentPage = parseInt(paginationParam.get("page"));
+  const currentPage = parseInt(paginationParam.get("page")) || 1;
   const paginatedTimestamp = paginate(
     sortedTimestamp,
     itemsPerPage,

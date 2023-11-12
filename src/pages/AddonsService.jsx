@@ -63,7 +63,7 @@ const AddonsService = () => {
         )}
         {addonsIsError && (
           <p className="text-sky-700 font-semibold">
-            {addonsError.response.data.message}
+            {addonsError?.response?.data?.message || "Something went wrong"}
           </p>
         )}
       </section>

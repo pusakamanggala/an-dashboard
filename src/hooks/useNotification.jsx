@@ -30,7 +30,7 @@ const useNotification = () => {
         },
       });
     } else if (type === "warning") {
-      toast.warning(message, toastOptions);
+      toast.warning(message, { ...toastOptions, autoClose: false });
     }
   };
 

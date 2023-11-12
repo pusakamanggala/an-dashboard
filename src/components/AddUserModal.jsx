@@ -344,7 +344,7 @@ const AddUserModal = ({ toggleModal }) => {
 };
 
 AddUserModal.propTypes = {
-  toggleModal: PropTypes.func.is,
+  toggleModal: PropTypes.func.isRequired,
 };
 
 export default AddUserModal;

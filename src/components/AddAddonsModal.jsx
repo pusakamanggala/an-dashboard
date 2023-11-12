@@ -34,7 +34,8 @@ const AddAddonsModal = ({ toggleModal }) => {
     label: member.username,
   }));
 
-  const { data: namespaceData } = useGetNamespace(userRole);
+  const { data: namespaceData, isSuccess: namespaceIsSuccess } =
+    useGetNamespace(userRole);
   // admin can choose all namespace from endpoint, but user can only choose namespace that they have in their jwt token
   const namespaceOptions =
     userRole === "admin"
@@ -378,7 +379,10 @@ const AddAddonsModal = ({ toggleModal }) => {
               <Select
                 options={namespaceOptions}
                 inputId="namespace"
-                isDisabled={addAddonsMutation.isLoading}
+                isDisabled={
+                  addAddonsMutation.isLoading ||
+                  (userRole === "admin" && !namespaceIsSuccess)
+                }
                 value={
                   namespace
                     ? namespaceOptions.find(
