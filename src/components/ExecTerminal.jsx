@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { getToken } from "../utils/helper";
 
 // This code is imperfect because it does not use a terminal library that matches ANSI escape codes. The libraries were not used because there were difficulties and unsolved problems during the implementation
 // the entire terminal, handling, and styling components are completely manually built
@@ -20,7 +21,7 @@ const ExecTerminal = ({ podName, namespace, terminalType }) => {
     const ws = new WebSocket(
       `wss://api.adaptivenetlab.site/v1/dashboard/kube/main/${
         terminalType.split(".")[0]
-      }/exec/${namespace}/${podName}`
+      }/exec/${namespace}/${podName}?token=${getToken()}`
     );
 
     ws.onopen = () => {

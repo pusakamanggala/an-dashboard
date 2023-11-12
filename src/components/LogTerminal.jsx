@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { getToken } from "../utils/helper";
 
 const LogTerminal = ({ podName, namespace }) => {
   const [terminalData, setTerminalData] = useState([]);
 
   useEffect(() => {
+    // set token to header
     const ws = new WebSocket(
-      `wss://api.adaptivenetlab.site/v1/dashboard/kube/main/deploy/logs/${namespace}/${podName}`
+      `wss://api.adaptivenetlab.site/v1/dashboard/kube/main/deploy/logs/${namespace}/${podName}?token=${getToken()}`
     );
 
     ws.onopen = () => {
