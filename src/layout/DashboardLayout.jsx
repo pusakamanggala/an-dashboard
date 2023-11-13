@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
@@ -41,15 +41,15 @@ const DashboardLayout = ({ children }) => {
       </button>
       <div className="w-0 flex-1 flex flex-col">
         <Header />
-
-        <main
-          className={`${
-            isTerminalFullScreen ? "hidden" : "p-5 flex-1 overflow-y-auto"
-          }`}
-        >
-          {children}
-        </main>
-
+        <Suspense>
+          <main
+            className={`${
+              isTerminalFullScreen ? "hidden" : "p-5 flex-1 overflow-y-auto"
+            }`}
+          >
+            {children}
+          </main>
+        </Suspense>
         {activeTerminal.length > 0 && (
           <TerminalSection
             isFullScreen={isTerminalFullScreen}

@@ -1,16 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "../pages/LoginPage";
-import DashboardLayout from "../layout/DashboardLayout";
-import Dashboard from "../pages/Dashboard";
-import Deployment from "../pages/Deployment";
-import Images from "../pages/Images";
-import AddonsService from "../pages/AddonsService";
-import Members from "../pages/Members";
-import Services from "../pages/Services";
-import ProjectConfig from "../pages/ProjectConfig";
 import UserContext from "../context/UserContext";
-import { useContext } from "react";
-import PageNotFound from "../pages/PageNotFound";
+import { lazy, useContext } from "react";
+
+// lazy load
+const LoginPage = lazy(() => import("../pages/LoginPage"));
+const DashboardLayout = lazy(() => import("../layout/DashboardLayout"));
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Deployment = lazy(() => import("../pages/Deployment"));
+const Images = lazy(() => import("../pages/Images"));
+const AddonsService = lazy(() => import("../pages/AddonsService"));
+const Members = lazy(() => import("../pages/Members"));
+const Services = lazy(() => import("../pages/Services"));
+const ProjectConfig = lazy(() => import("../pages/ProjectConfig"));
+const PageNotFound = lazy(() => import("../pages/PageNotFound"));
 
 const Router = () => {
   const { userRole } = useContext(UserContext);
