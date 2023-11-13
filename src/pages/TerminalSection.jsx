@@ -35,7 +35,7 @@ const TerminalSection = ({ isFullScreen, setIsFullScreen }) => {
 
   return (
     <section
-      className={`terminal flex flex-col ${isMinimized ? "" : "h-2/5"} ${
+      className={`terminal flex flex-col ${isMinimized ? "" : "h-1/2"} ${
         isFullScreen ? "flex-1" : ""
       }`}
     >
