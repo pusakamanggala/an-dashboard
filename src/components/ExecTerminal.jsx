@@ -97,6 +97,15 @@ const ExecTerminal = ({ podName, namespace, terminalType }) => {
     }
   };
 
+  const listRef = useRef(null);
+  useEffect(() => {
+    // Scroll to the last li element with the "focus" class
+    const focusElement = listRef.current.querySelector(".last-line");
+    if (focusElement) {
+      focusElement.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [output]);
+
   return (
     <div
       className="text-white p-4 overflow-y-auto"
@@ -104,9 +113,12 @@ const ExecTerminal = ({ podName, namespace, terminalType }) => {
     >
       <h1>Welcome to Adaptive Shell</h1>
       <h2 className="mb-3">Copyright (C) Adaptive Network Laboratory.</h2>
-      <div className="mb-4 space-y-2 whitespace-pre-wrap">
+      <div className="mb-4 space-y-2 whitespace-pre-wrap" ref={listRef}>
         {output.map((line, index) => (
-          <p key={index} className="m-0">
+          <p
+            key={index}
+            className={index === output.length - 1 ? "last-line" : ""}
+          >
             {line}
           </p>
         ))}
