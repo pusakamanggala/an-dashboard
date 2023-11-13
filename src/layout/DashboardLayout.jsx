@@ -41,15 +41,13 @@ const DashboardLayout = ({ children }) => {
       </button>
       <div className="w-0 flex-1 flex flex-col">
         <Header />
-        <Suspense>
-          <main
-            className={`${
-              isTerminalFullScreen ? "hidden" : "p-5 flex-1 overflow-y-auto"
-            }`}
-          >
-            {children}
-          </main>
-        </Suspense>
+        <main
+          className={`${
+            isTerminalFullScreen ? "hidden" : "p-5 flex-1 overflow-y-auto"
+          }`}
+        >
+          <Suspense>{children}</Suspense>
+        </main>
         {activeTerminal.length > 0 && (
           <TerminalSection
             isFullScreen={isTerminalFullScreen}
